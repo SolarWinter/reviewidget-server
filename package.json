@@ -8,7 +8,7 @@
     "dev:serve": "nodemon -w lib lib/main.js",
     "dev": "run-p dev:*",
     "build": "tsc -p tsconfig-prod.json",
-    "start": "npm run build && NODE_ENV=production node lib/main.js"
+    "start": "NODE_ENV=production node lib/main.js"
   },
   "keywords": [],
   "author": "",
