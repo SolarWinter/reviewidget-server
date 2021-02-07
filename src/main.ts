@@ -5,8 +5,8 @@ import Hapi from "@hapi/hapi";
 import { Server, Request } from "@hapi/hapi";
 import Vision from "@hapi/vision";
 import Nunjucks from "nunjucks";
-// import hapipino from "hapi-pino";
-import laabr from "laabr";
+import hapipino from "hapi-pino";
+// import laabr from "laabr";
 
 import { dbMigrate, getUserById, getUserByEmailAndPassword } from "./queries";
 
@@ -37,13 +37,13 @@ async function registerVision(server: Server) {
 
 /* Plugins need to finish registration before server can start. */
 async function registerServerPlugins(server: Server) {
-  // await server.register({
-  //   plugin: hapipino,
-  //   options: {
-  //     prettyPrint: !production
-  //   }
-  // });
-  await server.register({ plugin: laabr, options: {} });
+  await server.register({
+    plugin: hapipino,
+    options: {
+      prettyPrint: !production
+    }
+  });
+  // await server.register({ plugin: laabr, options: {} });
   await server.register(require("@hapi/cookie"));
   await server.register(Vision);
 }
