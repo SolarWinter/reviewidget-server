@@ -4,31 +4,44 @@ require("dotenv").config();
 import Hapi from "@hapi/hapi";
 import { Server, Request } from "@hapi/hapi";
 import Vision from "@hapi/vision";
-import Nunjucks from "nunjucks";
-import hapipino from "hapi-pino";
-// import laabr from "laabr";
+import Ejs = require("ejs");
+// import hapipino from "hapi-pino";
+import laabr from "laabr";
 
-import { dbMigrate, getUserById, getUserByEmailAndPassword } from "./queries";
+import { dbMigrate } from "./queries";
 
 import { reviewRoutes } from "./reviews";
+import { authRoutes, registerAuth } from "./auth";
 
 const production: boolean = (process.env.NODE_ENV === "production");
+
+declare module '@hapi/hapi' {
+  interface Request {
+    cookieAuth: any
+  }
+};
 
 async function registerVision(server: Server) {
   server.views({
     engines: {
-      html: {
-        compile: (src, options) => {
-          const template = Nunjucks.compile(src, options.environment);
-          return (context) => {
-            return template.render(context);
-          };
-        },
-        prepare: (options, next) => {
-          options.compileOptions.environment = Nunjucks.configure(options.path, { watch: false });
-          return next();
-        }
-      }
+      ejs: Ejs
+      // html: {
+      //   compile: (src: string, options: MyCompileOptions) => {
+      //     console.log("html->compile");
+      //     console.log("options", options);
+      //     const template = Nunjucks.compile(src, options.environment);
+      //     return (context: any) => {
+      //       return template.render(context);
+      //     };
+      //   },
+      //   prepare: (options: MyCompileOptions, next) => {
+      //     console.log("html->prepare");
+      //     console.log("options", options);
+      //     console.log("next", next);
+      //     options.compileOptions.environment = Nunjucks.configure(options.path, { watch: false });
+      //     return next();
+      //   }
+      // }
     },
     relativeTo: __dirname,
     path: 'templates'
@@ -37,13 +50,13 @@ async function registerVision(server: Server) {
 
 /* Plugins need to finish registration before server can start. */
 async function registerServerPlugins(server: Server) {
-  await server.register({
-    plugin: hapipino,
-    options: {
-      prettyPrint: !production
-    }
-  });
-  // await server.register({ plugin: laabr, options: {} });
+  // await server.register({
+  //   plugin: hapipino,
+  //   options: {
+  //     prettyPrint: !production
+  //   }
+  // });
+  await server.register({ plugin: laabr, options: {} });
   await server.register(require("@hapi/cookie"));
   await server.register(Vision);
 }
@@ -57,22 +70,7 @@ const init = async () => {
   await registerServerPlugins(server);
   await registerVision(server);
 
-  server.auth.strategy('session', 'cookie', {
-    cookie: {
-      name: 'reviewidget',
-      password: process.env.COOKIE_SECRET,
-      isSecure: production
-    },
-    redirectTo: '/login',
-    validateFunc: async function (request: Request, session: any) {
-      const account = await getUserById(request, session.id);
-      if (!account) {
-        return { valid: false };
-      }
-      return { valid: true, credentials: account };
-    }
-  });
-  server.auth.default('session');
+  registerAuth(server);
 
   server.route({
     method: "GET",
@@ -85,6 +83,7 @@ const init = async () => {
   });
 
   server.route(reviewRoutes);
+  server.route(authRoutes);
 
   server.route([
     {
@@ -96,62 +95,13 @@ const init = async () => {
     }
   ])
 
-  server.route([
-    {
-      method: 'GET',
-      path: '/login',
-      options: {
-        auth: {
-          mode: 'try'
-        },
-        plugins: {
-          'hapi-auth-cookie': {
-            redirectTo: false
-          }
-        },
-        handler: async (request, h) => {
-          if (request.auth.isAuthenticated) {
-            return h.redirect('/');
-          }
-          return h.view("login");
-        }
-      }
-    },
-    {
-      method: 'POST',
-      path: '/login',
-      options: {
-        auth: {
-          mode: 'try'
-        },
-        handler: async (request, h) => {
-          const { email, password } = request.payload;
-          if (!email || !password) {
-            return renderHtml.login('Missing username or password');
-          }
-
-          // Try to find user with given credentials
-          const account = await getUserByEmailAndPassword(request, email, password)
-          if (!account) {
-            return h.view("login", { message: 'Invalid username or password' });
-          } else {
-            request.cookieAuth.set({ id: account.id });
-            return h.redirect('/');
-          }
-        }
-      }
-    },
-    {
-      method: 'GET',
-      path: '/logout',
-      options: {
-        handler: (request, h) => {
-          request.cookieAuth.clear();
-          return h.redirect('/');
-        }
-      }
+  server.route({
+    method: "GET",
+    path: "/sites",
+    handler: (request, h) => {
+      return h.view("sites", { sites: [ { name: "Hello", location: "world" }] });
     }
-  ]);
+  })
 
   await dbMigrate(server);
 

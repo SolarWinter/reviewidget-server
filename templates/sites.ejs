@@ -1,0 +1,13 @@
+<html>
+  <head>
+    <title>Sites page</title>
+  </head>
+  <body>
+    <ul>
+      <% sites.forEach(function(site){ %>
+        <%= site.name %>
+        <%= site.location %>
+      <% }); %>
+    </ul>
+  </body>
+</html>
