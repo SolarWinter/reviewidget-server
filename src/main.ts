@@ -2,38 +2,50 @@ require("dotenv").config();
 'use strict';
 
 import Hapi from "@hapi/hapi";
-import { Request } from "@hapi/hapi";
-import hapipino from "hapi-pino";
-// import laabr from "laabr";
+import { Server, Request } from "@hapi/hapi";
+import Vision from "@hapi/vision";
+import Nunjucks from "nunjucks";
+// import hapipino from "hapi-pino";
+import laabr from "laabr";
 
-import { getSite, addReview, dbMigrate } from "./queries";
+import { dbMigrate, getUserById, getUserByEmailAndPassword } from "./queries";
 
-async function handleReview(request: Request) {
-  const rating = request.query.rating;
-  const domain = request.query.domain;
-  const remoteIp = request.info.remoteAddress;
+import { reviewRoutes } from "./reviews";
 
-  request.log(["debug", "review"], `Received rating ${rating} for ${domain} from ${remoteIp}`);
-  await addReview(domain, rating, remoteIp);
+const production: boolean = (process.env.NODE_ENV === "production");
 
-  let data = await getSite(domain);
-  // TODO randomise if we get an array
-  if (data.length >= 1) {
-    data = data[0];
-  }
+async function registerVision(server: Server) {
+  server.views({
+    engines: {
+      html: {
+        compile: (src, options) => {
+          const template = Nunjucks.compile(src, options.environment);
+          return (context) => {
+            return template.render(context);
+          };
+        },
+        prepare: (options, next) => {
+          options.compileOptions.environment = Nunjucks.configure(options.path, { watch: false });
+          return next();
+        }
+      }
+    },
+    relativeTo: __dirname,
+    path: 'templates'
+  });
+}
 
-  if (data.active) {
-    const returnData = {
-      reviewSiteUrl: data.reviewSiteUrl,
-      reviewSiteName: data.reviewSiteName,
-      reviewThreshold: data.reviewThreshold,
-      thankText: data.thankText
-    };
-    request.log(["info"], returnData)
-    return returnData;
-  } else {
-    return { thankText: data.thankText };
-  }
+/* Plugins need to finish registration before server can start. */
+async function registerServerPlugins(server: Server) {
+  // await server.register({
+  //   plugin: hapipino,
+  //   options: {
+  //     prettyPrint: !production
+  //   }
+  // });
+  await server.register({ plugin: laabr, options: {} });
+  await server.register(require("@hapi/cookie"));
+  await server.register(Vision);
 }
 
 const init = async () => {
@@ -42,14 +54,25 @@ const init = async () => {
     host: '0.0.0.0'
   });
 
-  /* Plugins need to finish registration before server can start. */
-  await server.register({
-    plugin: hapipino,
-    options: {
-      prettyPrint: process.env.NODE_ENV !== "production"
+  await registerServerPlugins(server);
+  await registerVision(server);
+
+  server.auth.strategy('session', 'cookie', {
+    cookie: {
+      name: 'reviewidget',
+      password: process.env.COOKIE_SECRET,
+      isSecure: production
+    },
+    redirectTo: '/login',
+    validateFunc: async function (request: Request, session: any) {
+      const account = await getUserById(request, session.id);
+      if (!account) {
+        return { valid: false };
+      }
+      return { valid: true, credentials: account };
     }
   });
-  // await server.register({ plugin: laabr, options: {} });
+  server.auth.default('session');
 
   server.route({
     method: "GET",
@@ -61,16 +84,74 @@ const init = async () => {
     }
   });
 
-  server.route({
-    method: "GET",
-    path: "/addReview",
-    handler: handleReview,
-    options: {
-      cors: {
-        origin: ['*']
+  server.route(reviewRoutes);
+
+  server.route([
+    {
+      method: "GET",
+      path: "/",
+      handler: (request, h) => {
+        return h.view('index', { ...request.auth.credentials });
       }
     }
-  });
+  ])
+
+  server.route([
+    {
+      method: 'GET',
+      path: '/login',
+      options: {
+        auth: {
+          mode: 'try'
+        },
+        plugins: {
+          'hapi-auth-cookie': {
+            redirectTo: false
+          }
+        },
+        handler: async (request, h) => {
+          if (request.auth.isAuthenticated) {
+            return h.redirect('/');
+          }
+          return h.view("login");
+        }
+      }
+    },
+    {
+      method: 'POST',
+      path: '/login',
+      options: {
+        auth: {
+          mode: 'try'
+        },
+        handler: async (request, h) => {
+          const { email, password } = request.payload;
+          if (!email || !password) {
+            return renderHtml.login('Missing username or password');
+          }
+
+          // Try to find user with given credentials
+          const account = await getUserByEmailAndPassword(request, email, password)
+          if (!account) {
+            return h.view("login", { message: 'Invalid username or password' });
+          } else {
+            request.cookieAuth.set({ id: account.id });
+            return h.redirect('/');
+          }
+        }
+      }
+    },
+    {
+      method: 'GET',
+      path: '/logout',
+      options: {
+        handler: (request, h) => {
+          request.cookieAuth.clear();
+          return h.redirect('/');
+        }
+      }
+    }
+  ]);
 
   await dbMigrate(server);
 
@@ -78,7 +159,6 @@ const init = async () => {
 };
 
 process.on('unhandledRejection', (err) => {
-
     console.log(err);
     process.exit(1);
 });

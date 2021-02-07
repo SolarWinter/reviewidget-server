@@ -1,7 +1,14 @@
-import { Server } from "@hapi/hapi";
+import { Request, Server } from "@hapi/hapi";
+import bcrypt from "bcrypt";
 
 const connection = require('../knexfile')[process.env.NODE_ENV || "development"];
-const database = require('knex')(connection)
+const database = require('knex')(connection);
+
+interface User {
+  id: number;
+  name: string;
+  age: number;
+}
 
 export function getAllSites() {
   return database('sites');
@@ -9,8 +16,9 @@ export function getAllSites() {
 
 export function getSite(site: string) {
   return database
-          .from("sites")
-          .where("domain","=",site);
+    .select()
+    .from("sites")
+    .where("domain","=",site);
 }
 
 export function addReview(site: string, rating: number, remote: string) {
@@ -29,4 +37,30 @@ export async function dbMigrate(server: Server) {
   }
 
   return database.migrate.latest();
+}
+
+export async function getUserById(request: Request, userId: number) {
+  const account = await database
+    .first()
+    .from("users")
+    .where("id","=",userId);
+  delete account.passwordHash;
+  request.log("Got account", account);
+  return Promise.resolve(account);
+}
+
+export async function getUserByEmailAndPassword(request: Request, email: string, password: string) {
+  let account = await database
+    .first()
+    .from("users")
+    .where("email","=",email);
+  if (account) {
+    request.log("Got account", account);
+    if (await bcrypt.compare(password, account.passwordHash)) {
+      delete account.passwordHash;
+    } else {
+      account = null;
+    }
+  }
+  return Promise.resolve(account);
 }
