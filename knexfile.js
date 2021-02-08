@@ -7,6 +7,11 @@ module.exports = {
     connection: "postgres://postgres:postgres@localhost:5432/reviewidget_dev",
   },
 
+  test: {
+    client: 'pg',
+    connection: "postgres://postgres:postgres@localhost:5432/reviewidget_test",
+  },
+
   staging: {
     client: 'pg',
     connection: "postgres://postgres:postgres@localhost:5432/reviewidget_staging",

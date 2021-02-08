@@ -7,6 +7,9 @@
     "dev:tsc": "tsc --watch -p .",
     "dev:serve": "nodemon -w lib lib/main.js",
     "dev": "run-p dev:*",
+    "test:watch": "nodemon -w lib -w test lab -v **/*.test.js",
+    "test:dev": "run-p dev:tsc test:watch",
+    "test": "NODE_ENV=test tsc -p . && lab -v **/*.test.js",
     "build": "tsc -p tsconfig-prod.json",
     "start": "NODE_ENV=production node lib/main.js"
   },
@@ -14,6 +17,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@hapi/code": "^8.0.2",
+    "@hapi/lab": "^24.1.0",
     "@types/bcrypt": "^3.0.0",
     "@types/ejs": "^3.0.5",
     "@types/hapi-pino": "^8.0.1",
