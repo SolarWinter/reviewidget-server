@@ -5,8 +5,14 @@ import Hapi from "@hapi/hapi";
 import { Server, Request } from "@hapi/hapi";
 import Vision from "@hapi/vision";
 import Ejs = require("ejs");
-// import hapipino from "hapi-pino";
-import laabr from "laabr";
+let hapipino: any, laabr: any;
+if (process.env.NODE_ENV === "production") {
+  // import hapipino from "hapi-pino";
+  hapipino = require("hapi-pino");
+} else  {
+  // import laabr from "laabr";
+  laabr = require("laabr");
+}
 
 import { dbMigrate } from "./queries";
 
@@ -50,13 +56,16 @@ async function registerVision(server: Server) {
 
 /* Plugins need to finish registration before server can start. */
 async function registerServerPlugins(server: Server) {
-  // await server.register({
-  //   plugin: hapipino,
-  //   options: {
-  //     prettyPrint: !production
-  //   }
-  // });
-  await server.register({ plugin: laabr, options: {} });
+  if (production) {
+    await server.register({
+      plugin: hapipino,
+      options: {
+        prettyPrint: !production
+      }
+    });
+  } else {
+    await server.register({ plugin: laabr, options: {} });
+  }
   await server.register(require("@hapi/cookie"));
   await server.register(Vision);
 }
