@@ -72,18 +72,18 @@ export const authRoutes: ServerRoute[] = [
           return h.view("signup", 
                         { message: "You need to supply an email address and password" });
         }
-        console.log("Finding user for email", o.email);
         const account = await getUserByEmail(request, o.email)
         if (!account) {
-          console.log("request.query.next is", request.query.next);
-          if (await createUser(request, o.email, o.password)) {
+          try {
+            await createUser(request, o.email, o.password);
             return h.redirect("/login");
-          } else {
+          } catch(err) {
+            console.error("Error occurred during signup", err);
+            request.log(["users", "error"], "Error occurred during signup: " + JSON.stringify(err));
             return h.view("signup", { message: "Sorry, an error occcurred." });
           }
         } else {
-          console.log("Account already found with email", 
-                      o.email, "redirecting to login");
+          request.log(`Account already found with email ${o.email} redirecting to login`);
           return h.redirect("/login");
         }
       }

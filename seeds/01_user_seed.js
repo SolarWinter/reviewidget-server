@@ -6,9 +6,9 @@ exports.seed = function(knex) {
   return knex('users').del()
     .then(async function () {
       // Inserts seed entries
-      hash = await Bcrypt.hash("Sherlock", parseInt(process.env.BCRYPT_SALT_ROUNDS));
       return knex('users').insert([
-        {email: 'johnwatson@bakerstreet.com', passwordHash: hash},
+        {email: 'johnwatson@bakerstreet.com', passwordHash: Bcrypt.hashSync("Sherlock", parseInt(process.env.BCRYPT_SALT_ROUNDS))},
+        {email: 'nerowolfe@brownstone.com', passwordHash: Bcrypt.hashSync("Satisfactory", parseInt(process.env.BCRYPT_SALT_ROUNDS))},
       ]);
     });
 };

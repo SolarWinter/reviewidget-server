@@ -5,9 +5,23 @@
   <body>
     <ul>
       <% sites.forEach(function(site){ %>
-        <%= site.name %>
-        <%= site.location %>
+      <li>
+        <a href="/sites/<%= site.id %>">
+          <%= site.domain %>
+        </a>
+        <%= site.reviewSiteName %>
+        <%= site.reviewSiteUrl %>
+        <%= site.reviewThreshold %>
+        <%= site.thankText %>
+        <a href="/sites/<%= site.id %>/edit">
+          Edit this site
+        </a>
+        <a href="/sites/<%= site.id %>/delete">
+          Delete this site
+        </a>
+      </li>
       <% }); %>
     </ul>
+    <a href="/sites/add">Add site</a>
   </body>
 </html>

@@ -1,16 +1,16 @@
 import { Request } from "@hapi/hapi";
 
-import { getSite, addReview } from "./queries";
+import { getSiteByDomain, addReview } from "./queries";
 
 export async function handleReview(request: Request) {
   const rating = request.query.rating;
   const domain = request.query.domain;
   const remoteIp = request.info.remoteAddress;
 
-  request.log(["debug", "review"], `Received rating ${rating} for ${domain} from ${remoteIp}`);
+  request.log(["review"], `Received rating ${rating} for ${domain} from ${remoteIp}`);
   await addReview(domain, rating, remoteIp);
 
-  let data = await getSite(domain);
+  let data = await getSiteByDomain(domain);
   // TODO randomise if we get an array
   if (data.length >= 1) {
     data = data[0];
