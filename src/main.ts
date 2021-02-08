@@ -2,20 +2,16 @@ require("dotenv").config();
 'use strict';
 
 import Hapi from "@hapi/hapi";
-import { Server, Request } from "@hapi/hapi";
-import Vision from "@hapi/vision";
-import Ejs = require("ejs");
+import { Server } from "@hapi/hapi";
+
 let hapipino: any, laabr: any;
 if (process.env.NODE_ENV === "production") {
-  // import hapipino from "hapi-pino";
   hapipino = require("hapi-pino");
 } else  {
-  // import laabr from "laabr";
   laabr = require("laabr");
 }
 
 import { dbMigrate } from "./queries";
-
 import { reviewRoutes } from "./reviews";
 import { authRoutes, registerAuth } from "./auth";
 
@@ -29,26 +25,7 @@ declare module '@hapi/hapi' {
 
 async function registerVision(server: Server) {
   server.views({
-    engines: {
-      ejs: Ejs
-      // html: {
-      //   compile: (src: string, options: MyCompileOptions) => {
-      //     console.log("html->compile");
-      //     console.log("options", options);
-      //     const template = Nunjucks.compile(src, options.environment);
-      //     return (context: any) => {
-      //       return template.render(context);
-      //     };
-      //   },
-      //   prepare: (options: MyCompileOptions, next) => {
-      //     console.log("html->prepare");
-      //     console.log("options", options);
-      //     console.log("next", next);
-      //     options.compileOptions.environment = Nunjucks.configure(options.path, { watch: false });
-      //     return next();
-      //   }
-      // }
-    },
+    engines: { ejs: require("ejs")},
     relativeTo: __dirname,
     path: 'templates'
   });
@@ -67,7 +44,7 @@ async function registerServerPlugins(server: Server) {
     await server.register({ plugin: laabr, options: {} });
   }
   await server.register(require("@hapi/cookie"));
-  await server.register(Vision);
+  await server.register(require("@hapi/vision"));
 }
 
 const init = async () => {

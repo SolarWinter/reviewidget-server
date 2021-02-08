@@ -49,6 +49,18 @@ export async function getUserById(request: Request, userId: number) {
   return Promise.resolve(account);
 }
 
+export async function getUserByEmail(request: Request, email: string) {
+  let account = await database
+    .first()
+    .from("users")
+    .where("email","=",email);
+  if (account) {
+    request.log("Got account", account);
+    delete account.passwordHash;
+  }
+  return Promise.resolve(account);
+}
+
 export async function getUserByEmailAndPassword(request: Request, email: string, password: string) {
   let account = await database
     .first()
@@ -63,4 +75,15 @@ export async function getUserByEmailAndPassword(request: Request, email: string,
     }
   }
   return Promise.resolve(account);
+}
+
+export async function createUser(request: Request, email: string, password: string) {
+  let success = false;
+  request.log(["users"], `Creating user ${email}`);
+  const hash = await bcrypt.hash(password, parseInt(process.env.BCRYPT_SALT_ROUNDS!));
+  const result = await database("users").insert({ email: email, passwordHash: hash });
+  if (result.command == "INSERT" && result.rowCount == 1) {
+    success = true;
+  }
+  return Promise.resolve(success);
 }
