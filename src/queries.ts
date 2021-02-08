@@ -4,12 +4,6 @@ import bcrypt from "bcrypt";
 const connection = require('../knexfile')[process.env.NODE_ENV || "development"];
 const database = require('knex')(connection);
 
-interface User {
-  id: number;
-  name: string;
-  age: number;
-}
-
 export function getAllSites() {
   return database('sites');
 }
@@ -28,11 +22,11 @@ export function addReview(site: string, rating: number, remote: string) {
 }
 
 export async function dbMigrate(server: Server) {
-  const [_completed, pending] = await database.migrate.list();
+  const [completed, pending] = await database.migrate.list();
   if (pending.length > 0) {
     server.log(["database"], "Pending migrations:");
     server.log(["database"], pending);
-  } else {
+  } else if (process.env.NODE_ENV != "test") {
     server.log(["database"], "Server migrations up to date")
   }
 
