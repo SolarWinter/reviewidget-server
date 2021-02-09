@@ -4,6 +4,12 @@ require("dotenv").config();
 import Hapi from "@hapi/hapi";
 import { Server } from "@hapi/hapi";
 
+declare module '@hapi/hapi' {
+  interface Server {
+    views: any;
+  }
+}
+
 let hapipino: any, laabr: any;
 if (process.env.NODE_ENV === "production") {
   hapipino = require("hapi-pino");
@@ -14,6 +20,7 @@ if (process.env.NODE_ENV === "production") {
 import { dbMigrate } from "./queries";
 import { reviewRoutes } from "./reviews";
 import { authRoutes, registerAuth } from "./auth";
+import { siteRoutes } from "./sites";
 
 export let server: Server;
 
@@ -77,6 +84,7 @@ export const init = async () => {
 
   server.route(reviewRoutes);
   server.route(authRoutes);
+  server.route(siteRoutes);
 
   server.route([
     {
@@ -87,14 +95,6 @@ export const init = async () => {
       }
     }
   ])
-
-  server.route({
-    method: "GET",
-    path: "/sites",
-    handler: (request, h) => {
-      return h.view("sites", { sites: [ { name: "Hello", location: "world" }] });
-    }
-  })
 
   await dbMigrate(server);
   return server;

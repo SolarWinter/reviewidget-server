@@ -526,6 +526,14 @@
   resolved "https://registry.yarnpkg.com/@types/hapi__catbox/-/hapi__catbox-10.2.3.tgz#c9279c16d709bf2987491c332e11d18124ae018f"
   integrity sha512-gs6MKMKXzWpSqeYsPaDIDAxD8jLNg7aFxgAJE6Jnc+ns072Z9fuh39/NF5gSk1KNoGCLnIpeZ0etT9gY9QDCKg==
 
+"@types/hapi__cookie@^10.1.2":
+  version "10.1.2"
+  resolved "https://registry.yarnpkg.com/@types/hapi__cookie/-/hapi__cookie-10.1.2.tgz#d1fdaf3ee3a4c310805b16febade199791c515ec"
+  integrity sha512-G/gvHs/+cKBQ//el3Z1hFTFqNsxE0rhe2bBvytZa1A//UqB7iOM+Sgu51Gpjab3YDOHVIZ9mCfckJcGyAgFgJw==
+  dependencies:
+    "@types/hapi__hapi" "*"
+    joi "^17.3.0"
+
 "@types/hapi__hapi@*", "@types/hapi__hapi@^20.0.5":
   version "20.0.5"
   resolved "https://registry.yarnpkg.com/@types/hapi__hapi/-/hapi__hapi-20.0.5.tgz#1cc41892a8ada002f4ee45fb8095b0aad0b0c17b"
