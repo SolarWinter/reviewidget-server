@@ -1,27 +1,37 @@
 <html>
   <head>
     <title>Sites page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
   </head>
   <body>
-    <ul>
+    <div class="container">
       <% sites.forEach(function(site){ %>
-      <li>
-        <a href="/sites/<%= site.id %>">
-          <%= site.domain %>
-        </a>
-        <%= site.reviewSiteName %>
-        <%= site.reviewSiteUrl %>
-        <%= site.reviewThreshold %>
-        <%= site.thankText %>
-        <a href="/sites/<%= site.id %>/edit">
-          Edit this site
-        </a>
-        <a href="/sites/<%= site.id %>/delete">
-          Delete this site
-        </a>
-      </li>
+        <div class="row">
+          <div class="col-sm">
+            <a href="/sites/<%= site.id %>"><%= site.domain %></a>
+          </div>
+          <div class="col-sm">
+            <%= site.reviewSiteName %>
+          </div>
+          <div class="col-sm">
+            <%= site.reviewSiteUrl %>
+          </div>
+          <div class="col-sm">
+            <%= site.reviewThreshold %>
+          </div>
+          <div class="col-sm">
+            <%= site.thankText %>
+          </div>
+          <div class="col-sm">
+            <a href="/sites/<%= site.id %>/edit">Edit this site</a>
+          </div>
+          <div class="col-sm">
+            <a href="/sites/<%= site.id %>/delete">Delete this site</a>
+          </div>
+        </div>
       <% }); %>
-    </ul>
+    </div>
     <a href="/sites/add">Add site</a>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
   </body>
 </html>
