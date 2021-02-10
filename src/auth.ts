@@ -8,6 +8,11 @@ import { createUser } from "./queries";
 
 const production: boolean = (process.env.NODE_ENV === "production");
 
+interface IncomingUser {
+  email: string;
+  password: string;
+};
+
 export function registerAuth(server: Server) {
   server.auth.strategy('session', 'cookie', {
     cookie: {
@@ -67,7 +72,7 @@ export const authRoutes: ServerRoute[] = [
           return h.redirect(request.query.next);
         }
 
-        const o: any = request.payload;
+        const o: IncomingUser = (request.payload as IncomingUser);
         if (!o.email || !o.password) {
           return h.view("signup", 
                         { message: "You need to supply an email address and password" });
@@ -119,7 +124,7 @@ export const authRoutes: ServerRoute[] = [
         mode: 'try'
       },
       handler: async (request, h) => {
-        const o: any = request.payload;
+        const o: IncomingUser = (request.payload as IncomingUser);
         if (!o.email || !o.password) {
           return h.view("login");
         }

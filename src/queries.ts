@@ -142,7 +142,7 @@ export async function deleteSite(request: Request, siteId: number | string, user
   }
 }
 
-export async function updateSite(request: Request, siteId: number | string, siteDetails: Site) {
+export async function updateSite(_request: Request, siteId: number | string, siteDetails: Site) {
   siteId = ensureInt(siteId);
   const result = await database("sites")
     .where({ id: siteId })

@@ -22,7 +22,7 @@ declare module "@hapi/hapi" {
 
 async function addSitePost(request: Request, h: ResponseToolkit) {
   try {
-    const incoming: any = request.payload;
+    const incoming: Site = (request.payload as Site);
     let siteDetails: Site = {
       user_id: parseInt(request.auth.credentials.id),
       domain: incoming.domain,
@@ -59,10 +59,13 @@ async function deleteSiteRender(request: Request, h: ResponseToolkit) {
   return h.view("deleteSite", { site: site, previousUrl: u.pathname });
 }
 
+interface UrlPayload {
+  previousUrl: string;
+};
 async function deleteSitePost(request: Request, h: ResponseToolkit) {
   const site = await getSiteById(request.params.siteId, request.auth.credentials.id);
   await deleteSite(request, site.id, request.auth.credentials.id);
-  return h.redirect(request.payload.previousUrl);
+  return h.redirect((request.payload as UrlPayload).previousUrl);
 }
 
 async function editSiteRender(request: Request, h: ResponseToolkit) {
@@ -72,7 +75,7 @@ async function editSiteRender(request: Request, h: ResponseToolkit) {
 
 async function editSitePost(request: Request, h: ResponseToolkit) {
   try {
-    const incoming: any = request.payload;
+    const incoming: Site = (request.payload as Site);
     let siteDetails: Site = {
       user_id: parseInt(request.auth.credentials.id),
       domain: incoming.domain,
