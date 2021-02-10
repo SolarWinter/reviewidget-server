@@ -126,7 +126,7 @@ export const authRoutes: ServerRoute[] = [
       handler: async (request, h) => {
         const o: IncomingUser = (request.payload as IncomingUser);
         if (!o.email || !o.password) {
-          return h.view("login");
+          return h.view("login", { message: "email and password are required." });
         }
 
         // Try to find user with given credentials
