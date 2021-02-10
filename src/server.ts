@@ -29,7 +29,7 @@ declare module '@hapi/hapi' {
 async function registerVision(server: Server) {
   server.views({
     engines: { ejs: require("ejs")},
-    relativeTo: __dirname,
+    relativeTo: __dirname + "/../",
     path: 'templates'
   });
 }
