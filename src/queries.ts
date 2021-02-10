@@ -173,3 +173,7 @@ export async function dbCleanAndSeed() {
   await knexCleaner.clean(database, options);
   return database.seed.run();
 }
+
+export async function dbClose() {
+  return database.destroy();
+}

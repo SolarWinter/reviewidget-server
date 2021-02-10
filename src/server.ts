@@ -11,7 +11,7 @@ if (process.env.NODE_ENV === "production") {
   laabr = require("laabr");
 }
 
-import { dbMigrate } from "./queries";
+import { dbMigrate, dbClose } from "./queries";
 import { reviewRoutes } from "./reviews";
 import { authRoutes, registerAuth } from "./auth";
 import { siteRoutes } from "./sites";
@@ -89,6 +89,10 @@ export const init = async () => {
       }
     }
   ])
+
+  server.events.on("stop", () => {
+    dbClose();
+  })
 
   await dbMigrate(server);
   return server;
