@@ -1,0 +1,39 @@
+version: 2.1
+jobs:
+  build_and_test:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:14
+      - image: circleci/postgres:11-alpine-ram
+        environment:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: reviewidget_test
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-all-{{ checksum "yarn.lock" }}
+      - run:
+          name: Install packages
+          command: yarn
+      - run:
+          name: build
+          command: yarn build
+      - save_cache:
+          key: dependency-cache-all-{{ checksum "yarn.lock" }}
+          paths:
+            - node_modules
+      - run:
+          name: Test
+          command: yarn test
+          environment:
+            DATABASE_URL: postgres://postgres@localhost:5432/reviewidget_test
+            COOKIE_SECRET: SomeReallyVeryLongCookieSecretString
+            BCRYPT_SALT_ROUNDS: 10
+      - store_test_results:
+          path: reports
+
+workflows:
+  build_and_test:
+    jobs:
+      - build_and_test
