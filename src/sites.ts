@@ -15,9 +15,6 @@ declare module "@hapi/hapi" {
     id: string;
     email: string;
   }
-  interface ResponseToolkit {
-    view: any;
-  }
 };
 
 async function addSitePost(request: Request, h: ResponseToolkit) {

@@ -4,12 +4,6 @@ require("dotenv").config();
 import Hapi from "@hapi/hapi";
 import { Server } from "@hapi/hapi";
 
-declare module '@hapi/hapi' {
-  interface Server {
-    views: any;
-  }
-}
-
 let hapipino: any, laabr: any;
 if (process.env.NODE_ENV === "production") {
   hapipino = require("hapi-pino");
