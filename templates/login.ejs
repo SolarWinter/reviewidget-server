@@ -5,8 +5,8 @@
   <body>
     <h3><% if(locals.message) { locals.message } %></h3>
     <form method="post">
-      email address: <input type="text" name="email" placeholder="email" required><br>
-      Password: <input type="password" name="password" placeholder="password" required><br></a>
-    <input type="submit" value="Login"></form>
+      <label for="email">email address:</label><input type="text" id="emailInput" name="email" placeholder="email" required><br>
+      <label for="password">Password:</label><input type="password" id="passwordInput" name="password" placeholder="password" required><br></a>
+    <input type="submit" id="loginButton" value="Login"></form>
   </body>
 </html>

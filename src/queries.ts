@@ -1,5 +1,6 @@
 import { Request, Server } from "@hapi/hapi";
 import bcrypt from "bcrypt";
+import knexCleaner from "knex-cleaner";
 
 const connection = require('../knexfile')[process.env.NODE_ENV || "development"];
 const database = require('knex')(connection);
@@ -110,11 +111,13 @@ export async function getUserByEmailAndPassword(_request: Request, email: string
 export async function createUser(request: Request, email: string, password: string) {
   request.log(["users"], `Creating user ${email}`);
   const hash = await bcrypt.hash(password, parseInt(process.env.BCRYPT_SALT_ROUNDS!));
-  const result = await database("users").insert({ email: email, passwordHash: hash });
+  const result = await database("users").insert({ email: email, passwordHash: hash }, ["id"]);
   if (result.length == 1) {
     return Promise.resolve(result[0].id);
+  } else {
+    console.error("result", result);
+    return Promise.reject("couldn't add user");
   }
-  return Promise.reject("couldn't add");
 }
 
 export async function createSite(request: Request, siteDetails: Site) {
@@ -122,8 +125,10 @@ export async function createSite(request: Request, siteDetails: Site) {
   const result = await database("sites").insert(siteDetails, ["id"]);
   if (result.length == 1) {
     return Promise.resolve(result[0].id);
+  } else {
+    console.error("result", result);
+    return Promise.reject("couldn't add site");
   }
-  return Promise.reject("couldn't add");
 }
 
 export async function deleteSite(request: Request, siteId: number | string, userId: number | string) {
@@ -154,4 +159,17 @@ export async function updateSite(_request: Request, siteId: number | string, sit
   } else {
     return Promise.reject({ message: "Error updating site" });
   }
+}
+
+/* Used for testing */
+export async function dbClean() {
+  const options = { ignoreTables: ["knex_migrations", "knex_migrations_lock"] };
+  return knexCleaner.clean(database, options);
+}
+
+export async function dbCleanAndSeed() {
+  // TODO add check for TEST env?
+  const options = { ignoreTables: ["knex_migrations", "knex_migrations_lock"] };
+  await knexCleaner.clean(database, options);
+  return database.seed.run();
 }
