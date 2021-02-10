@@ -13,6 +13,11 @@
     "build": "tsc -p tsconfig-prod.json",
     "start": "NODE_ENV=production node lib/main.js"
   },
+  "engines": {
+    "node": ">=12.0",
+    "yarn": ">=1.22.0",
+    "npm": ">=7.5.1"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
