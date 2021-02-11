@@ -1,23 +1,21 @@
 'use strict';
 
-const Lab = require('@hapi/lab');
-const { expect } = require("@hapi/code");
-
-const { afterEach, beforeEach, describe, it } = exports.lab = Lab.script();
+const chai = require("chai");
+const expect = chai.expect;
 
 const { init } = require("../lib/server");
+const { dbClose } = require("../lib/queries");
 
 describe('GET /', () => {
   let server;
 
-  beforeEach(async () => {
-    server = await init();
+  beforeEach((done) => {
+    init().then(s => { server = s; done(); });
+  })
+  afterEach((done) => {
+    server.stop().then(() => done());
   });
-
-  afterEach(async () => {
-    await server.stop();
-  });
-
+  
   it('ping responds with 200', async () => {
     const res = await server.inject({
       method: 'get',
