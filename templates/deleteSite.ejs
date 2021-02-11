@@ -1,22 +1,17 @@
-<html>
-  <head>
-    <title>Site page</title>
-  </head>
-  <body>
-    <p>
-      <%= site.domain %>
-      <%= site.reviewSiteName %>
-      <%= site.reviewSiteUrl %>
-      <%= site.reviewThreshold %>
-      <%= site.thankText %>
-    </p>
-    <p>Are you sure you want to delete this site?</p>
-    <form method="POST">
-      <input type="hidden" name="previousUrl" value="<%= previousUrl %>">
-      <p><button type="submit">Yes</button></p>
-    </form>
-    <p><a href="<%= previousUrl %>">No</a></p>
-  </body>
-</html>
+<%- include("header"); -%>
 
+<p>
+  <%= site.domain %>
+  <%= site.reviewSiteName %>
+  <%= site.reviewSiteUrl %>
+  <%= site.reviewThreshold %>
+  <%= site.thankText %>
+</p>
+<p>Are you sure you want to delete this site?</p>
+<form method="POST">
+  <input type="hidden" name="previousUrl" value="<%= previousUrl %>">
+  <p><button type="submit">Yes</button></p>
+</form>
+<p><a href="<%= previousUrl %>">No</a></p>
 
+<%- include("footer"); -%>

@@ -1,12 +1,10 @@
-<html>
-  <head>
-    <title>Login page</title>
-  </head>
-  <body>
-    <h3><% if(locals.message) { locals.message } %></h3>
-    <form method="post">
-      <label for="email">email address:</label><input type="text" id="emailInput" name="email" placeholder="email" required><br>
-      <label for="password">Password:</label><input type="password" id="passwordInput" name="password" placeholder="password" required><br></a>
-    <input type="submit" id="loginButton" value="Login"></form>
-  </body>
-</html>
+<%- include("header"); -%>
+
+<h1>Login page</h1>
+<h3><% if(locals.message) { locals.message } %></h3>
+<form method="post">
+  <label for="email">email address:</label><input type="text" id="emailInput" name="email" placeholder="email" required><br>
+  <label for="password">Password:</label><input type="password" id="passwordInput" name="password" placeholder="password" required><br></a>
+<input type="submit" id="loginButton" value="Login"></form>
+
+<%- include("footer"); -%>

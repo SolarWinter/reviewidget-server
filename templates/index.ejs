@@ -1,12 +1,9 @@
-<html>
-  <head>
-    <title>Hello</title>
-  </head>
-</html>
-<body>
-  <h1>Index</h1>
-  <p>Hello <%= email %></p>
-  <a href="/sites">Sites</a>
-  <a href="/logout">Logout</a>
-  <a href="/login">Login</a>
-</body>
+<%- include("header"); -%>
+
+<h1>Index</h1>
+<p>Hello <%= email %></p>
+<a href="/sites">Sites</a>
+<a href="/logout">Logout</a>
+<a href="/login">Login</a>
+
+<%- include("footer"); -%>
