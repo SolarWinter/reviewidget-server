@@ -10,8 +10,8 @@ const { dbClean, dbCleanAndSeed } = require("../lib/queries");
 
 function isLoginPage(htmlText) {
   const html = HTMLParser.parse(htmlText);
-  const title = html.querySelector("title");
-  return title.innerText === "Login page";
+  const h1 = html.querySelector("h1");
+  return h1.innerText === "Login page";
 }
 
 describe("auth tests", () => {

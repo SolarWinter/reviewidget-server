@@ -3,6 +3,7 @@ require("dotenv").config();
 
 import Hapi from "@hapi/hapi";
 import { Server } from "@hapi/hapi";
+import Path from "path";
 
 let hapipino: any, laabr: any;
 if (process.env.NODE_ENV === "production") {
@@ -48,12 +49,14 @@ async function registerServerPlugins(server: Server) {
   }
   await server.register(require("@hapi/cookie"));
   await server.register(require("@hapi/vision"));
+  await server.register(require('@hapi/inert'));
 }
 
 export const init = async () => {
   server = Hapi.server({
     port: process.env.PORT,
     host: '0.0.0.0'
+    // , debug: { log: ["*"], request: ["*"] }
   });
 
   await registerServerPlugins(server);
@@ -79,6 +82,21 @@ export const init = async () => {
   server.route(reviewRoutes);
   server.route(authRoutes);
   server.route(siteRoutes);
+
+  server.route({
+    method: "GET",
+    path: "/static/{param*}",
+    options: {
+      auth: {
+        mode: 'try'
+      }
+    },
+    handler: {
+      directory: {
+        path: Path.join(__dirname, "../static/")
+      }
+    }
+  });
 
   server.route([
     {
