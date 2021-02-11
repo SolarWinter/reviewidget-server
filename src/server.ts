@@ -91,7 +91,12 @@ export const init = async () => {
   ])
 
   server.events.on("stop", () => {
-    dbClose();
+    // We want it to close in dev or when running in production;
+    // when testing the server is started and stopped a lot, so
+    // we'll do it manually then.
+    if (process.env.NODE_ENV != "test") {
+      dbClose();
+    }
   })
 
   await dbMigrate(server);
