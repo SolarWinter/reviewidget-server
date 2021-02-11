@@ -1,10 +1,9 @@
 'use strict';
 
-const Lab = require('@hapi/lab');
-const { expect } = require("@hapi/code");
-const HTMLParser = require("node-html-parser");
+const chai = require("chai");
+const expect = chai.expect;
 
-const { afterEach, beforeEach, describe, it } = exports.lab = Lab.script();
+const HTMLParser = require("node-html-parser");
 
 const { init } = require("../lib/server");
 const { dbClean, dbCleanAndSeed } = require("../lib/queries");
@@ -51,7 +50,7 @@ describe("user tests", () => {
     }});
     expect(res.statusCode).to.equal(302);
     expect(res.headers.location).to.equal("/sites");
-    expect("res.headers.set-cookie").to.not.be.undefined;
+    expect(res.headers["set-cookie"]).to.not.be.undefined;
   });
 
   it("can login to an existing user", async () => {
@@ -62,7 +61,7 @@ describe("user tests", () => {
     }});
     expect(res.statusCode).to.equal(302);
     expect(res.headers.location).to.equal("/sites");
-    expect("res.headers.set-cookie").to.not.be.undefined;
+    expect(res.headers["set-cookie"]).to.not.be.undefined;
   });
 
   it("redirected from the login page when already logged in", async () => {
@@ -76,7 +75,7 @@ describe("user tests", () => {
     }});
     expect(res.statusCode).to.equal(302);
     expect(res.headers.location).to.equal("/sites");
-    expect("res.headers.set-cookie").to.not.be.undefined;
+    expect(res.headers["set-cookie"]).to.not.be.undefined;
     loginCookie = res.headers["set-cookie"];
 
     res = await server.inject({
@@ -98,7 +97,7 @@ describe("user tests", () => {
     }});
     expect(res.statusCode).to.equal(302);
     expect(res.headers.location).to.equal("/sites");
-    expect("res.headers.set-cookie").to.not.be.undefined;
+    expect(res.headers["set-cookie"]).to.not.be.undefined;
     loginCookie = res.headers["set-cookie"];
 
     res = await server.inject({

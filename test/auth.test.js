@@ -1,10 +1,9 @@
 'use strict';
 
-const Lab = require('@hapi/lab');
-const { expect } = require("@hapi/code");
-const HTMLParser = require("node-html-parser");
+const chai = require("chai");
+const expect = chai.expect;
 
-const { afterEach, beforeEach, describe, it } = exports.lab = Lab.script();
+const HTMLParser = require("node-html-parser");
 
 const { init } = require("../lib/server");
 const { dbClean, dbCleanAndSeed } = require("../lib/queries");
@@ -25,7 +24,7 @@ describe("auth tests", () => {
     await server.stop();
   });
 
-  it("can't login as non-existing user", async () => {
+  it("can't login as non-existing user", async function() {
     await dbClean();
 
     let res = await server.inject({
@@ -33,10 +32,10 @@ describe("auth tests", () => {
       payload: { email: "johnwatson@bakerstreet.com", password: "Sherlock"
     }});
     expect(res.statusCode).to.equal(200);
-    expect("res.headers.set-cookie").to.be.undefined;
+    expect(res.headers["set-cookie"]).to.be.undefined;
   });
 
-  it("can't login as existing user with wrong password", async () => {
+  it("can't login as existing user with wrong password", async function() {
     await dbCleanAndSeed();
 
     let res = await server.inject({
@@ -45,13 +44,13 @@ describe("auth tests", () => {
     }});
     expect(isLoginPage(res.result)).to.be.true;
     expect(res.statusCode).to.equal(200);
-    expect("res.headers.set-cookie").to.be.undefined;
+    expect(res.headers["set-cookie"]).to.be.undefined;
   });
 
-  it("can't access protected page if not logged in", async () => {
+  it("can't access protected page if not logged in", async function() {
     let res = await server.inject("/sites");
     expect(res.statusCode).to.equal(302);
     expect(res.headers.location).to.equal("/login?next=%2Fsites");
-    expect("res.headers.set-cookie").to.be.undefined;
+    expect(res.headers["set-cookie"]).to.be.undefined;
   });
 });

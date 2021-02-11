@@ -2,3 +2,4 @@ node_modules
 tsconfig.tsbuildinfo
 lib
 yarn-error.log
+reports
