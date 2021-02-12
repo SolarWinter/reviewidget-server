@@ -89,7 +89,7 @@ async function editSitePost(request: Request, h: ResponseToolkit) {
     console.error("error", err);
     request.log(["error"], "Error adding site");
     // TODO Find what the failure was
-    return h.view("addsite");
+    return h.view("addsite", { loggedIn: request.auth.isAuthenticated });
   }
 }
 
