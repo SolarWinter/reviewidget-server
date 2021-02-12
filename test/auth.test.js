@@ -7,12 +7,7 @@ const HTMLParser = require("node-html-parser");
 
 const { init } = require("../lib/server");
 const { dbClean, dbCleanAndSeed } = require("../lib/queries");
-
-function isLoginPage(htmlText) {
-  const html = HTMLParser.parse(htmlText);
-  const h1 = html.querySelector("h1");
-  return h1.innerText === "Login page";
-}
+const { isLoginSignupPage } = require("./utils");
 
 describe("auth tests", () => {
   let server;
@@ -42,8 +37,8 @@ describe("auth tests", () => {
       method: "POST", url: "/login?next=/sites",
       payload: { email: "johnwatson@bakerstreet.com", password: "WrongPassword"
     }});
-    expect(isLoginPage(res.result)).to.be.true;
     expect(res.statusCode).to.equal(200);
+    isLoginSignupPage(res.result, "Login page");
     expect(res.headers["set-cookie"]).to.be.undefined;
   });
 
@@ -52,5 +47,7 @@ describe("auth tests", () => {
     expect(res.statusCode).to.equal(302);
     expect(res.headers.location).to.equal("/login?next=%2Fsites");
     expect(res.headers["set-cookie"]).to.be.undefined;
+    // To actually get the login page we'd have to issue another GET to
+    // headers.location - no point we already test the login page works. 
   });
 });
