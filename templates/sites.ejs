@@ -2,7 +2,7 @@
 
 <div class="container">
   <% sites.forEach(function(site){ %>
-    <div class="row">
+    <div class="row site-entry" id="site-<%= site.id %>">
       <div class="col-sm">
         <a href="/sites/<%= site.id %>"><%= site.domain %></a>
       </div>

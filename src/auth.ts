@@ -23,7 +23,9 @@ export function registerAuth(server: Server) {
     redirectTo: '/login',
     appendNext: true,
     validateFunc: async function (request: Request, session: any) {
+      console.log("validateFunc in - session", session);
       const account = await getUserById(request, session.id);
+      console.log("Account", account);
       if (!account) {
         return { valid: false };
       }
