@@ -27,11 +27,20 @@ declare module '@hapi/hapi' {
   }
 };
 
+function buildVisionContext(request: Request) {
+  return {
+    // TODO fix it
+    loggedIn: (request as any).auth.isAuthenticated
+  };
+}
+
 async function registerVision(server: Server) {
   server.views({
     engines: { ejs: require("ejs")},
     relativeTo: __dirname + "/../",
-    path: 'templates'
+    path: 'templates',
+    isCached: process.env.NODE_ENV != "development",
+    context: buildVisionContext
   });
 }
 

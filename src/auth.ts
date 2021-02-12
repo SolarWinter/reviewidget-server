@@ -76,7 +76,7 @@ export const authRoutes: ServerRoute[] = [
 
         const o: IncomingUser = (request.payload as IncomingUser);
         if (!o.email || !o.password) {
-          return h.view("signup", 
+          return h.view("signup",
                         { message: "You need to supply an email address and password" });
         }
         const account = await getUserByEmail(request, o.email)
