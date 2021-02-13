@@ -36,11 +36,19 @@ function buildVisionContext(request: Request) {
 }
 
 async function registerVision(server: Server) {
+  let cached: boolean;
+
+  if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
+    cached = false;
+  } else {
+    cached = true;
+  }
+  server.log(["debug"], `Caching templates: ${cached}`);
   server.views({
     engines: { ejs: require("ejs")},
     relativeTo: __dirname + "/../",
     path: 'templates',
-    isCached: process.env.NODE_ENV != "development",
+    isCached: cached,
     context: buildVisionContext
   });
 }
