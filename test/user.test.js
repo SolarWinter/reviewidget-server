@@ -20,13 +20,13 @@ describe("user tests", () => {
   it("can get the login page", async () => {
     const res = await server.inject({ method: "get", url: "/login" });
     expect(res.statusCode).to.equal(200);
-    isLoginSignupPage(res.result, "Login page");
+    isLoginSignupPage(res.result);
   });
 
   it("can get the signup page", async () => {
     const res = await server.inject({ method: "get", url: "/signup" });
     expect(res.statusCode).to.equal(200);
-    isLoginSignupPage(res.result, "Signup page");
+    isLoginSignupPage(res.result);
   });
 
   it("can create a new user and login", async () =>{
