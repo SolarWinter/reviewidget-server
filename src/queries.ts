@@ -161,6 +161,12 @@ export async function updateSite(_request: Request, siteId: number | string, sit
   }
 }
 
+export function addRedirectEntry(site_id: number, remote: string) {
+  return database
+    .from("redirects")
+    .insert({ site_id: site_id, remoteIp: remote }, ["id"]);
+}
+
 /* Used for testing */
 export async function dbClean() {
   const options = { ignoreTables: ["knex_migrations", "knex_migrations_lock"] };
