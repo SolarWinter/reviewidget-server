@@ -3,12 +3,10 @@
 const chai = require("chai");
 const expect = chai.expect;
 
-const HTMLParser = require("node-html-parser");
-
 const { init } = require("../lib/server");
 const { dbCleanAndSeed } = require("../lib/queries");
 
-describe.only("redirect", () => {
+describe("redirect", () => {
   let server;
 
   beforeEach(async () => {

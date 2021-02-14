@@ -1,8 +1,8 @@
-import { Request, ServerRoute  } from "@hapi/hapi";
+import { Request, ResponseToolkit, ServerRoute  } from "@hapi/hapi";
 
 import { getSiteByDomain, addReview } from "./queries";
 
-export async function handleReview(request: Request) {
+export async function handleReview(request: Request, h: ResponseToolkit) {
   const rating = request.query.rating;
   const domain = request.query.domain;
   const remoteIp = request.info.remoteAddress;
@@ -23,10 +23,13 @@ export async function handleReview(request: Request) {
       reviewThreshold: data.reviewThreshold,
       thankText: data.thankText
     };
-    request.log(["info"], returnData)
     return returnData;
-  } else {
+  } else if (data.length != 0) {
     return { thankText: data.thankText };
+  } else {
+    const response = h.response()
+    response.code(404);
+    return response;
   }
 }
 
