@@ -1,0 +1,30 @@
+<%- include("header"); -%>
+
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+  <% campaigns.forEach(function(campaign){ %>
+    <div class="relative rounded-lg border border-gray-300 bg-white px-6 py-5 my-4 shadow-lg flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 campaign-entry" id="campaign-<%= campaign.id %>">
+      <!-- TODO make this stand out -->
+      <div href="#" class="flex-shrink-0 block font-bold text-center px-4 py-4 hover:text-gray-700 sm:rounded-b-lg">
+        <a href="/campaigns/<%= campaign.id %>"><%= campaign.domain %></a>
+      </div>
+      <div class="flex-1 min-w-0">
+        <a href="/campaigns/<%= campaign.id %>" class="focus:outline-none">
+          <span class="absolute inset-0" aria-hidden="true"></span>
+          <p class="text-sm font-medium text-gray-900">
+          </p>
+          <p class="text-sm text-gray-500 truncate">
+            Looking for <%= campaign.reviewThreshold %>-star reviews on <a href="<%= campaign.reviewSiteUrl %>"><%= campaign.reviewSiteName %></a>
+          </p>
+        </a>
+      </div>
+    </div>
+  <% }); %>
+</div>
+
+<a href="/campaigns/add">
+  <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
+    Add campaign
+  </button>
+</a>
+
+<%- include("footer"); -%>

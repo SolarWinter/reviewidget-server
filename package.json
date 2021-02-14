@@ -5,7 +5,7 @@
   "main": "lib/main.js",
   "scripts": {
     "dev:tsc": "tsc --watch -p .",
-    "dev:serve": "nodemon -e ts,js -w lib lib/main.js",
+    "dev:serve": "nodemon -e ts,js,ejs -w lib -w templates lib/main.js",
     "dev": "run-p dev:*",
     "test:watch": "nodemon -e ts,js -w lib -w test lab -v **/*.test.js",
     "test:dev": "run-p dev:tsc test:watch",
@@ -68,6 +68,7 @@
     "hapi-pino": "^8.3.0",
     "knex": "^0.21.17",
     "laabr": "^6.1.3",
+    "moment": "^2.29.1",
     "pg": "^8.5.1"
   }
 }
