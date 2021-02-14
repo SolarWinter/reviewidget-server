@@ -6,6 +6,7 @@ const connection = require('../knexfile')[process.env.NODE_ENV || "development"]
 export const database = require('knex')(connection);
 
 export interface Site {
+  id?: number;
   user_id: number;
   domain: string;
   reviewSiteName: string;
@@ -13,6 +14,14 @@ export interface Site {
   reviewThreshold: number;
   thankText: string;
   active: boolean;
+};
+
+export interface Campaign {
+  id?: number;
+  site_id: number;
+  active: boolean;
+  start: Date;
+  finish: Date;
 };
 
 function ensureInt(i : number | string) : number {
@@ -166,6 +175,31 @@ export function addRedirectEntry(site_id: number, remote: string) {
     .from("redirects")
     .insert({ site_id: site_id, remoteIp: remote }, ["id"]);
 }
+
+export async function getCampaignsForUser(userId: number | string) {
+  userId = ensureInt(userId);
+  const sql = database
+    .from('campaigns')
+    .select(["campaigns.*", "sites.domain"])
+    .innerJoin('sites', {
+      'campaigns.site_id': 'sites.id', 'sites.user_id': userId
+    }).toSQL();
+  console.log(sql.sql);
+  return database
+    .from('campaigns')
+    .select(["campaigns.*", "sites.domain"])
+    .innerJoin('sites', {
+      'campaigns.site_id': 'sites.id', 'sites.user_id': userId
+    })
+}
+
+export function getCampaignById(campaignId: number | string) {
+  campaignId = ensureInt(campaignId);
+  return database
+    .first()
+    .from("campaigns")
+    .where({ id: campaignId });
+};
 
 /* Used for testing */
 export async function dbClean() {

@@ -17,6 +17,7 @@ import { reviewRoutes } from "./reviews";
 import { authRoutes, registerAuth } from "./auth";
 import { siteRoutes } from "./sites";
 import { redirectRoutes } from "./redirect";
+import { campaignRoutes } from "./campaigns";
 
 export let server: Server;
 
@@ -100,6 +101,7 @@ export const init = async () => {
   server.route(reviewRoutes);
   server.route(authRoutes);
   server.route(siteRoutes);
+  server.route(campaignRoutes);
   server.route(redirectRoutes);
 
   server.route({

@@ -8,19 +8,19 @@
         <a href="/sites/<%= site.id %>"><%= site.domain %></a>
       </div>
       <div class="flex-1 min-w-0">
-        <a href="#" class="focus:outline-none">
-          <span class="absolute inset-0" aria-hidden="true"></span>
-          <p class="text-sm font-medium text-gray-900">
-          </p>
-          <p class="text-sm text-gray-500 truncate">
-            Looking for <%= site.reviewThreshold %>-star reviews on <a href="<%= site.reviewSiteUrl %>"><%= site.reviewSiteName %></a>
-          </p>
-        </a>
+        <!-- Nothing to show here really! -->
       </div>
     </div>
   <% }); %>
 </div>
 
-<a href="/sites/add">Add site</a>
+<a href="/sites/add">
+  <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
+    Add site
+  </button>
+</a>
+<button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
+  Add campaign
+</button>
 
 <%- include("footer"); -%>
