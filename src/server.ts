@@ -16,6 +16,7 @@ import { dbMigrate, dbClose } from "./queries";
 import { reviewRoutes } from "./reviews";
 import { authRoutes, registerAuth } from "./auth";
 import { siteRoutes } from "./sites";
+import { redirectRoutes } from "./redirect";
 
 export let server: Server;
 
@@ -91,6 +92,7 @@ export const init = async () => {
   server.route(reviewRoutes);
   server.route(authRoutes);
   server.route(siteRoutes);
+  server.route(redirectRoutes);
 
   server.route({
     method: "GET",

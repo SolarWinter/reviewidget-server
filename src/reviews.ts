@@ -1,4 +1,4 @@
-import { Request } from "@hapi/hapi";
+import { Request, ServerRoute  } from "@hapi/hapi";
 
 import { getSiteByDomain, addReview } from "./queries";
 
@@ -30,7 +30,7 @@ export async function handleReview(request: Request) {
   }
 }
 
-export const reviewRoutes = [
+export const reviewRoutes: ServerRoute[] = [
   {
     method: "GET",
     path: "/addReview",
@@ -38,7 +38,8 @@ export const reviewRoutes = [
     options: {
       cors: {
         origin: ['*']
-      }
+      },
+      auth: false
     }
   }
 ]
