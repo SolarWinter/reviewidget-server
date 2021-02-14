@@ -2,17 +2,18 @@
 
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
   <% sites.forEach(function(site){ %>
-    <div class="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 site-entry" id="site-<%= site.id %>">
-      <div class="flex-shrink-0">
+    <div class="relative rounded-lg border border-gray-300 bg-white px-6 py-5 my-4 shadow-lg flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 site-entry" id="site-<%= site.id %>">
+      <!-- TODO make this stand out -->
+      <div href="#" class="flex-shrink-0 block font-bold text-center px-4 py-4 hover:text-gray-700 sm:rounded-b-lg">
+        <a href="/sites/<%= site.id %>"><%= site.domain %></a>
       </div>
       <div class="flex-1 min-w-0">
         <a href="#" class="focus:outline-none">
           <span class="absolute inset-0" aria-hidden="true"></span>
           <p class="text-sm font-medium text-gray-900">
-            <a href="/sites/<%= site.id %>"><%= site.domain %></a>
           </p>
           <p class="text-sm text-gray-500 truncate">
-            For: <%= site.reviewThreshold %>-star reviews on <a href="<%= site.reviewSiteUrl %>"><%= site.reviewSiteName %></a>
+            Looking for <%= site.reviewThreshold %>-star reviews on <a href="<%= site.reviewSiteUrl %>"><%= site.reviewSiteName %></a>
           </p>
         </a>
       </div>

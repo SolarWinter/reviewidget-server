@@ -7,6 +7,11 @@
     <link href="/static/css/style.css" rel="stylesheet">
   </head>
   <body class="mx-7">
+    <script>
+      /* To prevent Firefox FOUC *in developer mode only*, this must be here */
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1404468#c81
+      // let FF_FOUC_FIX;
+    </script>
 
     <div class="border-b-2 md:flex md:items-center md:justify-between md:space-x-5 py-3 my-1 mb-3">
       <div class="flex items-start space-x-5">
