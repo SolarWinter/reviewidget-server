@@ -13,45 +13,33 @@
       // let FF_FOUC_FIX;
     </script>
 
-    <div class="border-b-2 md:flex md:items-center md:justify-between md:space-x-5 py-3 my-1 mb-3">
-      <div class="flex items-start space-x-5">
-        <div class="flex-shrink-0">
-          <div class="relative">
-            <span class="absolute inset-0 shadow-inner rounded-full" aria-hidden="true"></span>
-          </div>
-        </div>
-        <!--
-          Use vertical padding to simulate center alignment when both lines of text are one line,
-          but preserve the same layout if the text wraps without making the image jump around.
-        -->
-        <div class="pt-1.5">
-          <h1 class="text-2xl font-bold text-gray-900">Reviewidget</h1>
-          <p class="text-sm font-medium text-gray-500">
-            Subtitle.
-          </p>
+    <!-- component -->
+    <nav class="flex items-center justify-between flex-wrap bg-teal-300 p-6">
+      <div class="flex items-center flex-no-shrink text-white mr-6">
+        <svg class="h-8 w-8 mr-2" width="54" height="54" viewBox="0 0 54 54" xmlns="http://www.w3.org/2000/svg"><path d="M13.5 22.1c1.8-7.2 6.3-10.8 13.5-10.8 10.8 0 12.15 8.1 17.55 9.45 3.6.9 6.75-.45 9.45-4.05-1.8 7.2-6.3 10.8-13.5 10.8-10.8 0-12.15-8.1-17.55-9.45-3.6-.9-6.75.45-9.45 4.05zM0 38.3c1.8-7.2 6.3-10.8 13.5-10.8 10.8 0 12.15 8.1 17.55 9.45 3.6.9 6.75-.45 9.45-4.05-1.8 7.2-6.3 10.8-13.5 10.8-10.8 0-12.15-8.1-17.55-9.45-3.6-.9-6.75.45-9.45 4.05z"/></svg>
+        <span class="font-semibold text-xl tracking-tight">Reviewidget</span>
+      </div>
+      <div class="block lg:hidden">
+        <button class="flex items-center px-3 py-2 border rounded text-teal-lighter border-teal-light hover:text-white hover:border-white">
+          <svg class="h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <title>Reviewidget</title>
+            <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
+        <div class="lg:flex-grow">
+          <a href="/sites" class="block mt-4 lg:inline-block lg:mt-0 text-teal-lighter hover:text-white mr-4">
+            Sites
+          </a>
         </div>
         <div>
-          <a href="/sites">Sites</a>
+          <% if (loggedIn) { %>
+            <a href="/logout" class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal hover:bg-white mt-4 lg:mt-0">Logout</a>
+          <% } else { %>
+            <a href="/login" class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal hover:bg-white mt-4 lg:mt-0">Login</a>
+            <a href="/signup" class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal hover:bg-white mt-4 lg:mt-0">Sign up</a>
+          <% } %>
         </div>
       </div>
-      <div class="mt-6 flex flex-col-reverse justify-stretch space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-x-reverse sm:space-y-0 sm:space-x-3 md:mt-0 md:flex-row md:space-x-3">
-        <% if (loggedIn) { %>
-          <a href="/logout">
-            <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
-              Logout
-            </button>
-          </a>
-        <% } else { %>
-          <a href="/login">
-            <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
-              Login
-            </button>
-          </a>
-          <a href="/signup">
-            <button type="button" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
-              Signup
-            </button>
-          </a>
-        <% } %>
-      </div>
-    </div>
+    </nav>
