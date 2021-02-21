@@ -2,6 +2,8 @@ import { Request, Server } from "@hapi/hapi";
 import bcrypt from "bcrypt";
 import knexCleaner from "knex-cleaner";
 
+import { QueryBuilder } from "knex";
+
 const connection = require('../knexfile')[process.env.NODE_ENV || "development"];
 export const database = require('knex')(connection);
 
@@ -9,10 +11,6 @@ export interface Site {
   id?: number;
   user_id: number;
   domain: string;
-  reviewSiteName: string;
-  reviewSiteUrl: string;
-  reviewThreshold: number;
-  thankText: string;
   active: boolean;
 };
 
@@ -20,9 +18,21 @@ export interface Campaign {
   id?: number;
   site_id: number;
   active: boolean;
+  reviewSiteName: string;
+  reviewSiteUrl: string;
+  reviewThreshold: number;
+  thankText: string;
   start: Date;
   finish: Date;
 };
+
+async function printSql(query: QueryBuilder, msg?: string) {
+  const sql = await query.toSQL();
+  if (msg) {
+    console.log(msg);
+  }
+  console.log(sql.sql);
+}
 
 function ensureInt(i : number | string) : number {
   if (typeof i == "string") {
@@ -38,15 +48,15 @@ export function getAllSites() {
 // Used only for getting review data so we can supply it to the widget
 export function getSiteByDomain(site: string) {
   return database
-    .select()
+    .first()
     .from("sites")
     .where({ domain: site });
 }
 
-export function getSitesForUser(userId: number | string) {
+export function getSitesForUser(userId: number | string, fields?: string[]) {
   userId = ensureInt(userId);
   return database
-    .select()
+    .select(fields)
     .from("sites")
     .where({ user_id: userId });
 };
@@ -178,19 +188,22 @@ export function addRedirectEntry(site_id: number, remote: string) {
 
 export async function getCampaignsForUser(userId: number | string) {
   userId = ensureInt(userId);
-  const sql = database
-    .from('campaigns')
-    .select(["campaigns.*", "sites.domain"])
-    .innerJoin('sites', {
-      'campaigns.site_id': 'sites.id', 'sites.user_id': userId
-    }).toSQL();
-  console.log(sql.sql);
   return database
     .from('campaigns')
     .select(["campaigns.*", "sites.domain"])
     .innerJoin('sites', {
       'campaigns.site_id': 'sites.id', 'sites.user_id': userId
     })
+}
+
+export async function getActiveCampaignsForDomain(domain: string) {
+  return database
+    .from('campaigns')
+    .select(["campaigns.*", "sites.domain"])
+    .innerJoin('sites', {
+      'campaigns.site_id': 'sites.id'
+    })
+    .where({ 'sites.domain': domain, 'campaigns.active': true })
 }
 
 export function getCampaignById(campaignId: number | string) {
@@ -200,6 +213,49 @@ export function getCampaignById(campaignId: number | string) {
     .from("campaigns")
     .where({ id: campaignId });
 };
+
+export async function createCampaign(request: Request, campaignData: Campaign) {
+  request.log(["campaigns"], `Creating campaign for site ${campaignData.site_id}`);
+  campaignData.site_id = ensureInt(campaignData.site_id);
+  const result = await database("campaigns").insert(campaignData, ["id"]);
+  if (result.length == 1) {
+    return Promise.resolve(result[0].id);
+  } else {
+    console.error("result", result);
+    request.log(["campaigns", "error"],
+                `Couldn't add campaign for site ${campaignData.site_id}`)
+    return Promise.reject("couldn't add campaign");
+  }
+}
+
+export async function updateCampaign(_request: Request, campaignId: number | string, campaignDetails: Campaign) {
+  campaignId = ensureInt(campaignId);
+  const result = await database("campaigns")
+    .where({ id: campaignId })
+    .returning("id")
+    .update(campaignDetails);
+
+  if (result.length == 1 && result[0] == campaignId) {
+    return Promise.resolve(result[0]);
+  } else {
+    return Promise.reject({ message: "Error updating campaign" });
+  }
+}
+
+export async function deleteCampaign(request: Request, campaignId: number | string) {
+  campaignId = ensureInt(campaignId);
+  request.log(["campaigns"], `Deleting campaign ${campaignId}`);
+  const result = await database("campaigns")
+    .where({ id: campaignId })
+    .returning("id")
+    .del();
+
+  if (result.length == 1 && result[0] == campaignId) {
+    return Promise.resolve();
+  } else {
+    return Promise.reject({ message: "Error deleting campaign" });
+  }
+}
 
 /* Used for testing */
 export async function dbClean() {

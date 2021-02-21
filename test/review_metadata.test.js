@@ -4,7 +4,7 @@ const chai = require("chai");
 const expect = chai.expect;
 
 const { init } = require("../lib/server");
-const { dbCleanAndSeed } = require("../lib/queries");
+const { dbCleanAndSeed, dbClean } = require("../lib/queries");
 
 describe("review", () => {
   let server;
@@ -28,6 +28,8 @@ describe("review", () => {
   });
 
   it("returns 'not found' for invalid site entry", async () => {
+    await dbClean();
+
     let res = await server.inject({ method: "GET", url: "/addReview?domain=wombatsvilleunited.com&rating=5" });
     expect(res.statusCode).to.equal(404);
     expect(res.result).to.be.null;

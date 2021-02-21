@@ -1,0 +1,17 @@
+<%- include("header"); -%>
+
+<ul>
+  <li><%= campaign.domain %></li>
+  <li><%= campaign.thankText %></li>
+  <li><a href="<%= campaign.reviewSiteUrl %>"><%= campaign.reviewSiteName %></a></li>
+  <li><%= campaign.reviewThreshold %></li>
+  <li><%= campaign.startDate %></li>
+  <li><%= campaign.finishDate %></li>
+</ul>
+<p>Are you sure you want to delete this campaign?</p>
+<form method="POST">
+  <p><button type="submit">Yes</button></p>
+</form>
+<p><a href="<%= previousUrl %>">No</a></p>
+
+<%- include("footer"); -%>
