@@ -147,6 +147,7 @@ export const start = async () => {
 };
 
 process.on('unhandledRejection', (err) => {
-    console.log(err);
-    process.exit(1);
+  console.error("unhandledRejection");
+  console.error(err);
+  process.exit(1);
 });

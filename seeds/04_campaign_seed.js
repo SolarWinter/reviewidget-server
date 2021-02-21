@@ -6,9 +6,6 @@ exports.seed = function(knex) {
     .del()
     .then(async function () {
       now = moment()
-      console.log("now", now);
-      console.log("start", now.subtract(14, 'days').toDate());
-      console.log("finish", now.subtract(7, 'days').toDate());
       localhostId = await knex("sites").first(["id"]).where({ domain: 'localhost' });
       widgetId = await knex("sites").first(["id"]).where({ domain: 'widget.lvh.me' });
       ipId = await knex("sites").first(["id"]).where({ domain: '192.168.0.200' });

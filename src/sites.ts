@@ -6,10 +6,6 @@ import { Site } from "./queries";
 import { createSite, deleteSite, updateSite } from "./queries";
 import { getSiteById, getSitesForUser } from "./queries";
 
-async function addSiteRender(_request: Request, h: ResponseToolkit) {
-  return h.view("addsite");
-}
-
 declare module "@hapi/hapi" {
   interface AuthCredentials {
     id: string;
@@ -17,16 +13,16 @@ declare module "@hapi/hapi" {
   }
 };
 
+async function addSiteRender(_request: Request, h: ResponseToolkit) {
+  return h.view("addsite");
+}
+
 async function addSitePost(request: Request, h: ResponseToolkit) {
   try {
     const incoming: Site = (request.payload as Site);
     let siteDetails: Site = {
       user_id: parseInt(request.auth.credentials.id),
       domain: incoming.domain,
-      reviewSiteName: incoming.reviewSiteName,
-      reviewSiteUrl: incoming.reviewSiteUrl,
-      reviewThreshold: incoming.reviewThreshold,
-      thankText: incoming.thankText,
       // TODO make it a checkbox
       active: true
     };
@@ -76,10 +72,6 @@ async function editSitePost(request: Request, h: ResponseToolkit) {
     let siteDetails: Site = {
       user_id: parseInt(request.auth.credentials.id),
       domain: incoming.domain,
-      reviewSiteName: incoming.reviewSiteName,
-      reviewSiteUrl: incoming.reviewSiteUrl,
-      reviewThreshold: incoming.reviewThreshold,
-      thankText: incoming.thankText,
       // TODO make it a checkbox
       active: true
     };
