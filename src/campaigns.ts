@@ -1,38 +1,50 @@
-import { Request, ResponseToolkit, ServerRoute } from "@hapi/hapi";
+import { Request, ResponseToolkit, ResponseObject, ServerRoute } from "@hapi/hapi";
 
 import moment from "moment";
 
 import { getCampaignsForUser, getCampaignById, getSiteById, getSitesForUser } from "./queries";
 import { createCampaign, updateCampaign, deleteCampaign } from "./queries";
-import { Campaign } from "./queries";
+import { Campaign, Site } from "./queries";
 
 declare module "@hapi/hapi" {
   interface AuthCredentials {
     id: string;
     email: string;
   }
-};
+}
 
-async function showCampaigns(request: Request, h: ResponseToolkit ) {
+async function showCampaigns(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const campaigns: Campaign[] = await getCampaignsForUser(request.auth.credentials.id);
   return h.view("campaigns", { campaigns: campaigns });
 }
 
-async function showCampaign(request: Request, h: ResponseToolkit) {
+async function showCampaign(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const campaign: Campaign = await getCampaignById(request.params.campaignId);
   const site = await getSiteById(campaign.site_id, request.auth.credentials.id);
   return h.view("campaign", { campaign: { ...campaign, domain: site.domain }, moment: moment});
 }
 
-async function addCampaignRender(request: Request, h: ResponseToolkit) {
+async function addCampaignRender(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
+  type ContextType = {
+    domains: string[];
+    siteId?: number | string;
+    campaign: object;
+    moment: object;
+  };
+
   const domains = await getSitesForUser(request.auth.credentials.id, ["domain", "id"]);
-  return h.view("addCampaign", { domains: domains });
+  const context: ContextType = { domains: domains, campaign: {}, moment: moment};
+  if (request.query.site) {
+    context["siteId"] = request.query.site;
+  }
+  return h.view("addCampaign", context);
 }
 
-async function addCampaignPost(request: Request, h: ResponseToolkit) {
+async function addCampaignPost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
+  let campaignDetails: Campaign = {} as Campaign;
   try {
     const incoming: Campaign = (request.payload as Campaign);
-    let campaignDetails: Campaign = {
+    campaignDetails = {
       site_id: incoming.site_id,
       reviewSiteName: incoming.reviewSiteName,
       reviewSiteUrl: incoming.reviewSiteUrl,
@@ -40,42 +52,49 @@ async function addCampaignPost(request: Request, h: ResponseToolkit) {
       thankText: incoming.thankText,
       start: incoming.start,
       finish: incoming.finish,
-      // TODO make it a checkbox
-      active: true
+      active: incoming.active
     };
+    console.log("campaignDetails:", campaignDetails);
     const id = await createCampaign(request, campaignDetails);
     request.log(`Created campaign id ${id}`);
     return h.redirect("/campaigns/" + id);
   } catch (err) {
     console.error("error", err);
     request.log(["error"], "Error adding campaign");
+    const domains = await getSitesForUser(request.auth.credentials.id, ["domain", "id"]);
     // TODO Find what the failure was
-    return h.view("addcampaign");
+    // TODO send back the data they submitted to re-fill the form
+    return h.view("addcampaign", { domains: domains, campaign: campaignDetails });
   }
 }
 
-async function deleteCampaignRender(request: Request, h: ResponseToolkit) {
+async function deleteCampaignRender(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const campaign: Campaign = await getCampaignById(request.params.campaignId);
   const u = new URL(request.headers.referer);
   return h.view("deleteCampaign", { campaign: campaign, previousUrl: u.pathname });
 }
 
-async function deleteCampaignPost(request: Request, h: ResponseToolkit) {
+async function deleteCampaignPost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   // await deleteCampaign(request, site.id, request.auth.credentials.id);
   await deleteCampaign(request, request.params.campaignId);
   return h.redirect("/campaigns");
 }
 
-async function editCampaignRender(request: Request, h: ResponseToolkit) {
+async function editCampaignRender(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const campaign: Campaign = await getCampaignById(request.params.campaignId);
   const domains = await getSitesForUser(request.auth.credentials.id, ["domain", "id"]);
-  return h.view("editCampaign", { campaign: campaign, domains: domains });
+  const site = await getSiteById(campaign.site_id, request.auth.credentials.id);
+  console.log("editCampaignRender - rendering data", { campaign: campaign, domains: domains, moment: moment });
+  return h.view("editCampaign", { campaign: campaign, domains: domains, moment: moment});
 }
 
-async function editCampaignPost(request: Request, h: ResponseToolkit) {
+async function editCampaignPost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
+  let campaignDetails: Campaign = {} as Campaign;
+  let site: Site = {} as Site;
   try {
     const incoming: Campaign = (request.payload as Campaign);
-    let campaignDetails: Campaign = {
+    site = await getSiteById(incoming.site_id, request.auth.credentials.id);
+    campaignDetails = {
       site_id: incoming.site_id,
       reviewSiteName: incoming.reviewSiteName,
       reviewSiteUrl: incoming.reviewSiteUrl,
@@ -83,8 +102,7 @@ async function editCampaignPost(request: Request, h: ResponseToolkit) {
       thankText: incoming.thankText,
       start: incoming.start,
       finish: incoming.finish,
-      // TODO make it a checkbox
-      active: true
+      active: incoming.active
     };
     const id = await updateCampaign(request, request.params.campaignId, campaignDetails);
     return h.redirect("/campaigns/" + id);
@@ -92,7 +110,7 @@ async function editCampaignPost(request: Request, h: ResponseToolkit) {
     console.error("error", err);
     request.log(["error"], "Error adding campaign");
     // TODO Find what the failure was
-    return h.view("editCampaign", { loggedIn: request.auth.isAuthenticated });
+    return h.view("editCampaign", { loggedIn: request.auth.isAuthenticated, campaign: { ...campaignDetails, domain: site.domain } });
   }
 }
 
