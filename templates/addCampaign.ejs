@@ -1,25 +1,171 @@
 <%- include("header"); -%>
 
 <form method="POST">
-  <ul>
-    <!-- <li><label for="domain">Domain (e.g. www.google.com)</label><input type="text" name="domain" placeholder="your.domain.com" required /></li> -->
-    <li>
-      <select name="site_id" id="site-select">
-        <option value="">--Please choose a site--</option>
-        <% domains.forEach(function(domain){ %>
-          <option value="<%= domain.id %>"><%= domain.domain %></option>
-        <% }); %>
-      </select>
-    </li>
-    <li><label for="thankText">The text thanking the user for the rating</label><textarea name="thankText" rows="5" cols="20" required></textarea></li>
-    <li><label for="reviewSiteName">The name of the review site</label><input type="text" name="reviewSiteName" placeholder="Yelp reviews" required /></li>
-    <li><label for="reviewSiteUrl">The web address of the review site</label><input type="text" name="reviewSiteUrl" placeholder="https://www.yelp.com/" required /></li>
-    <li><label for="reviewThreshold">The threshold for asking the user to submit a review.</label><input type="number" name="reviewThreshold" value="5" required /></li>
-    <li><label for="startDate">Start date</label><input type="date" name="start" required /></li>
-    <li><label for="finishDate">Finish date</label><input type="date" name="finish" required /></li>
-  </ul>
-  <input type="submit" value="Add">
+  <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+
+    <div class="px-4 py-5 sm:px-6 flex items-center justify-between flex-wrap sm:flex-nowrap">
+      <h3 class="text-2xl leading-6 font-medium text-gray-900">
+        <select name="site_id" id="site-select">
+          <option value="-">Pick a site</option>
+          <% domains.forEach(function(domain){ %>
+            <option
+              value="<%= domain.id %>"
+              <% if (locals.siteId && (domain.id == siteId)) { %>
+                selected
+              <% } %>
+            >
+              <%= domain.domain %>
+            </option>
+          <% }) %>
+        </select>
+      </h3>
+    </div>
+
+    <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+      <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-3">
+        <div class="sm:col-span-1">
+          <dt class="text-sm font-medium text-gray-500">
+            <label>Review site</label>
+          </dt>
+          <dd class="mt-1 text-gray-900">
+            <input type="text" class="block w-full shadow-sm py-3 px-4 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" name="reviewSiteName" value="<%= campaign.reviewSiteName %>" required />
+          </dd>
+        </div>
+        <div class="sm:col-span-1">
+          <dt class="text-sm font-medium text-gray-500">
+          <label for="reviewSiteUrl">Review site address</label>
+          </dt>
+          <dd class="mt-1 text-gray-900">
+            <input type="text" class="block w-full shadow-sm py-3 px-4 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" name="reviewSiteUrl" value="<%= campaign.reviewSiteUrl %>" required />
+          </dd>
+        </div>
+        <div class="sm:col-span-1">
+          <dt class="text-sm font-medium text-gray-500">
+            Review threshold
+          </dt>
+          <dd class="mt-1 text-gray-900">
+            <input type="number" class="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" name="reviewThreshold" value="<%= campaign.reviewThreshold %>" required />
+          </dd>
+        </div>
+      </dl>
+      <dl class="pt-3 mt-3 grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-3">
+        <div class="sm:col-span-1">
+          <dt class="text-sm font-medium text-gray-500">
+            <label for="start">Campaign start</label>
+          </dt>
+          <dd class="mt-1 text-gray-900">
+            <input
+              type="date"
+              class="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+              name="start"
+              <% if (campaign.start) { %>
+                value="<%= moment(campaign.start).format("YYYY-MM-DD") %>"
+              <% } %>
+              required
+            />
+          </dd>
+        </div>
+        <div class="sm:col-span-1">
+          <dt class="text-sm font-medium text-gray-500">
+            <label for="finish">Campaign finish</label>
+          </dt>
+          <dd class="mt-1 text-gray-900">
+            <input
+              type="date"
+              class="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+              name="finish"
+              <% if (campaign.finish) { %>
+                value="<%= moment(campaign.finish).format("YYYY-MM-DD") %>"
+              <% } %>
+              required
+            />
+          </dd>
+        </div>
+        <div class="sm:col-span-1">
+          <dt class="text-sm font-medium text-gray-500">
+            <label for="active">Campaign active?</label>
+          </dt>
+          <dd class="mt-1 text-gray-900">
+            <input
+              name="active"
+              id="active"
+              type="checkbox"
+              class="py-4 px-4 block mt-3 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+              <%= (campaign.active ? "checked" : "") %>
+            >
+          </dd>
+        </div>
+      </dl>
+      <dl class="pt-3 mt-3 grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-1">
+        <div class="sm:col-span-1">
+          <dt class="text-sm font-medium text-gray-500">
+            <label for="thankText">Thank you text</label>
+          </dt>
+          <dd class="mt-1 text-gray-900">
+            <textarea class="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" name="thankText" rows="5" cols="20" required><%= campaign.thankText %></textarea>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+  <div class="pt-5 pr-6">
+    <div class="flex justify-end">
+      <button type="button" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        Cancel
+      </button>
+      <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        Add
+      </button>
+    </div>
+  </div>
 </form>
-</ul>
+
+<script>
+  const starColour = "#f06";
+  const starColourEmpty = "none";
+
+  let gRatingThreshold = 0;
+  function setNewThreshold(ev) {
+    let node = ev.target;
+    /* Sometimes we get a click on 'svg', sometimes 'path'. No idea why. */
+    if (node.tagName == "path") {
+      node = node.parentNode;
+    }
+    const val = parseInt(node.id);
+    gRatingThreshold = val;
+
+    const parentDiv = document.getElementById("starContainer");
+    if (!parentDiv) {
+      console.error("Couldn't get starContainer");
+      return;
+    }
+    for (child of parentDiv.children) {
+      if (child.tagName == "svg") {
+        if (parseInt(child.id) <= val) {
+          child.style.fill = starColour;
+        } else {
+          child.style.fill = starColourEmpty;
+        }
+      }
+    }
+    const ratingText = document.getElementById("ratingTextVisible");
+    ratingText.innerText = val;
+    const reviewThreshold = document.getElementById("reviewThreshold");
+    reviewThreshold.value = val;
+  }
+  function attachListeners() {
+    const parentDiv = document.getElementById("starContainer");
+    if (!parentDiv) {
+      console.error("Couldn't get starContainer");
+      return;
+    }
+    for (child of parentDiv.children) {
+      if (child.tagName == "svg") {
+        child.addEventListener("click", setNewThreshold);
+      }
+    }
+  }
+  window.addEventListener("load", attachListeners);
+</script>
 
 <%- include("footer"); -%>
