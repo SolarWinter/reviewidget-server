@@ -2,17 +2,30 @@ import { Request, Server } from "@hapi/hapi";
 import bcrypt from "bcrypt";
 import knexCleaner from "knex-cleaner";
 
-import { QueryBuilder } from "knex";
+import Knex from "knex";
+import knexConfig from './knexfile';
 
-const connection = require('../knexfile')[process.env.NODE_ENV || "development"];
-export const database = require('knex')(connection);
+let config: Knex.Config;
+switch (process.env.NODE_ENV) {
+  case "development":
+    config = knexConfig.development;
+    break;
+  case "test":
+    config = knexConfig.test;
+    break;
+  default:
+    config = knexConfig.production;
+    break;
+}
+
+export const database: Knex = Knex(config);
 
 export interface Site {
   id?: number;
   user_id: number;
   domain: string;
   active: boolean;
-};
+}
 
 export interface Campaign {
   id?: number;
@@ -24,15 +37,22 @@ export interface Campaign {
   thankText: string;
   start: Date;
   finish: Date;
-};
-
-async function printSql(query: QueryBuilder, msg?: string) {
-  const sql = await query.toSQL();
-  if (msg) {
-    console.log(msg);
-  }
-  console.log(sql.sql);
 }
+
+export interface User {
+  id: number;
+  email: string;
+  passwordHash: string;
+}
+
+// import { QueryBuilder } from "knex";
+// async function printSql(query: QueryBuilder, msg?: string) {
+//   const sql = await query.toSQL();
+//   if (msg) {
+//     console.log(msg);
+//   }
+//   console.log(sql.sql);
+// }
 
 function ensureInt(i : number | string) : number {
   if (typeof i == "string") {
@@ -41,42 +61,44 @@ function ensureInt(i : number | string) : number {
   return i;
 }
 
-export function getAllSites() {
+export function getAllSites(): Promise<Site[]> {
   return database('sites');
 }
 
 // Used only for getting review data so we can supply it to the widget
-export function getSiteByDomain(site: string) {
+export function getSiteByDomain(site: string): Promise<Site> {
   return database
     .first()
     .from("sites")
     .where({ domain: site });
 }
 
-export function getSitesForUser(userId: number | string, fields?: string[]) {
+export function getSitesForUser(userId: number | string, fields?: string[]): Promise<Site[]> {
   userId = ensureInt(userId);
-  return database
-    .select(fields)
-    .from("sites")
-    .where({ user_id: userId });
-};
+  let query = database.from("sites");
+  if (fields) {
+    query = query.select(fields);
+  }
+  return query.where({ user_id: userId });
+}
 
-export function getSiteById(siteId: number | string, userId: number | string) {
+export function getSiteById(siteId: number | string, userId: number | string): Promise<Site> {
   siteId = ensureInt(siteId);
   userId = ensureInt(userId);
   return database
     .first()
     .from("sites")
     .where({ id: siteId, user_id: userId });
-};
+}
 
-export function addReview(site: string, rating: number, remote: string) {
+export function addReview(site: string, rating: number, remote: string): Promise<number> {
   return database
     .from("reviews")
     .insert({ domain: site, rating: rating, remoteIp: remote }, ["id"]);
 }
 
-export async function dbMigrate(server: Server) {
+// TODO Do better than unknown
+export async function dbMigrate(server: Server): Promise<unknown> {
   const [completed, pending] = await database.migrate.list();
   server.log(["database", "debug"], `Completed ${completed.length} migrations.`);
   if (pending.length > 0) {
@@ -89,7 +111,7 @@ export async function dbMigrate(server: Server) {
   return database.migrate.latest();
 }
 
-export async function getUserById(_request: Request, userId: number) {
+export async function getUserById(_request: Request, userId: number): Promise<User> {
   const account = await database
     .first()
     .from("users")
@@ -100,8 +122,8 @@ export async function getUserById(_request: Request, userId: number) {
   return Promise.resolve(account);
 }
 
-export async function getUserByEmail(_request: Request, email: string) {
-  let account = await database
+export async function getUserByEmail(_request: Request, email: string): Promise<User> {
+  const account = await database
     .first()
     .from("users")
     .where({ email: email });
@@ -111,7 +133,7 @@ export async function getUserByEmail(_request: Request, email: string) {
   return Promise.resolve(account);
 }
 
-export async function getUserByEmailAndPassword(_request: Request, email: string, password: string) {
+export async function getUserByEmailAndPassword(_request: Request, email: string, password: string): Promise<User> {
   let account = await database
     .first()
     .from("users")
@@ -127,7 +149,7 @@ export async function getUserByEmailAndPassword(_request: Request, email: string
   return Promise.resolve(account);
 }
 
-export async function createUser(request: Request, email: string, password: string) {
+export async function createUser(request: Request, email: string, password: string): Promise<User> {
   request.log(["users"], `Creating user ${email}`);
   const hash = await bcrypt.hash(password, parseInt(process.env.BCRYPT_SALT_ROUNDS!));
   const result = await database("users").insert({ email: email, passwordHash: hash }, ["id"]);
@@ -139,7 +161,7 @@ export async function createUser(request: Request, email: string, password: stri
   }
 }
 
-export async function createSite(request: Request, siteDetails: Site) {
+export async function createSite(request: Request, siteDetails: Site): Promise<number> {
   request.log(["sites"], "Creating site" + siteDetails);
   const result = await database("sites").insert(siteDetails, ["id"]);
   if (result.length == 1) {
@@ -150,25 +172,25 @@ export async function createSite(request: Request, siteDetails: Site) {
   }
 }
 
-export async function deleteSite(request: Request, siteId: number | string, userId: number | string) {
+export async function deleteSite(request: Request, siteId: number | string, userId: number | string): Promise<number> {
   siteId = ensureInt(siteId);
   userId = ensureInt(userId);
   request.log(["sites"], `Deleting site ${siteId} for ${userId}`);
-  const result = await database("sites")
+  const result: number[] = await database("sites")
     .where({ id: siteId, user_id: userId })
     .returning("id")
     .del();
 
   if (result.length == 1 && result[0] == siteId) {
-    return Promise.resolve();
+    return Promise.resolve(result[0]);
   } else {
     return Promise.reject({ message: "Error deleting site" });
   }
 }
 
-export async function updateSite(_request: Request, siteId: number | string, siteDetails: Site) {
+export async function updateSite(_request: Request, siteId: number | string, siteDetails: Site): Promise<number> {
   siteId = ensureInt(siteId);
-  const result = await database("sites")
+  const result: number[] = await database("sites")
     .where({ id: siteId })
     .returning("id")
     .update(siteDetails);
@@ -180,13 +202,14 @@ export async function updateSite(_request: Request, siteId: number | string, sit
   }
 }
 
-export function addRedirectEntry(site_id: number, remote: string) {
+// TODO Do better than unknown
+export function addRedirectEntry(site_id: number, remote: string): Promise<unknown> {
   return database
     .from("redirects")
     .insert({ site_id: site_id, remoteIp: remote }, ["id"]);
 }
 
-export async function getCampaignsForUser(userId: number | string) {
+export async function getCampaignsForUser(userId: number | string): Promise<Campaign[]> {
   userId = ensureInt(userId);
   return database
     .from('campaigns')
@@ -196,7 +219,7 @@ export async function getCampaignsForUser(userId: number | string) {
     })
 }
 
-export async function getActiveCampaignsForDomain(domain: string) {
+export async function getActiveCampaignsForDomain(domain: string): Promise<Campaign[]> {
   return database
     .from('campaigns')
     .select(["campaigns.*", "sites.domain"])
@@ -206,15 +229,15 @@ export async function getActiveCampaignsForDomain(domain: string) {
     .where({ 'sites.domain': domain, 'campaigns.active': true })
 }
 
-export function getCampaignById(campaignId: number | string) {
+export function getCampaignById(campaignId: number | string): Promise<Campaign> {
   campaignId = ensureInt(campaignId);
   return database
     .first()
     .from("campaigns")
     .where({ id: campaignId });
-};
+}
 
-export async function createCampaign(request: Request, campaignData: Campaign) {
+export async function createCampaign(request: Request, campaignData: Campaign): Promise<number> {
   request.log(["campaigns"], `Creating campaign for site ${campaignData.site_id}`);
   campaignData.site_id = ensureInt(campaignData.site_id);
   const result = await database("campaigns").insert(campaignData, ["id"]);
@@ -228,9 +251,9 @@ export async function createCampaign(request: Request, campaignData: Campaign) {
   }
 }
 
-export async function updateCampaign(_request: Request, campaignId: number | string, campaignDetails: Campaign) {
+export async function updateCampaign(_request: Request, campaignId: number | string, campaignDetails: Campaign): Promise<number> {
   campaignId = ensureInt(campaignId);
-  const result = await database("campaigns")
+  const result: number[] = await database("campaigns")
     .where({ id: campaignId })
     .returning("id")
     .update(campaignDetails);
@@ -242,34 +265,40 @@ export async function updateCampaign(_request: Request, campaignId: number | str
   }
 }
 
-export async function deleteCampaign(request: Request, campaignId: number | string) {
+export async function deleteCampaign(request: Request, campaignId: number | string): Promise<number> {
   campaignId = ensureInt(campaignId);
   request.log(["campaigns"], `Deleting campaign ${campaignId}`);
-  const result = await database("campaigns")
+  const result: number[] = await database("campaigns")
     .where({ id: campaignId })
     .returning("id")
     .del();
 
   if (result.length == 1 && result[0] == campaignId) {
-    return Promise.resolve();
+    return Promise.resolve(result[0]);
   } else {
     return Promise.reject({ message: "Error deleting campaign" });
   }
 }
 
 /* Used for testing */
-export async function dbClean() {
+// TODO Do better than unknown
+export async function dbClean(): Promise<unknown> {
   const options = { ignoreTables: ["knex_migrations", "knex_migrations_lock"] };
+  // Ignoring the knexCleaner line because of https://github.com/steven-ferguson/knex-cleaner/issues/42
+  // @ts-ignore
   return knexCleaner.clean(database, options);
 }
 
-export async function dbCleanAndSeed() {
+// TODO Do better than unknown
+export async function dbCleanAndSeed(): Promise<unknown> {
   // TODO add check for TEST env?
   const options = { ignoreTables: ["knex_migrations", "knex_migrations_lock"] };
+  // Ignoring the knexCleaner line because of https://github.com/steven-ferguson/knex-cleaner/issues/42
+  // @ts-ignore
   await knexCleaner.clean(database, options);
   return database.seed.run();
 }
 
-export async function dbClose() {
+export async function dbClose(): Promise<unknown>  {
   return database.destroy();
 }

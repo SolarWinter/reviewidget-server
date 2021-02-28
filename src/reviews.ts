@@ -1,9 +1,10 @@
-import { Request, ResponseToolkit, ServerRoute  } from "@hapi/hapi";
+import { Request, ResponseToolkit, ServerRoute } from "@hapi/hapi";
 
 import { getActiveCampaignsForDomain, addReview } from "./queries";
 import { Campaign } from "./queries";
 
-export async function handleReview(request: Request, h: ResponseToolkit) {
+// TODO do better
+export async function handleReview(request: Request, h: ResponseToolkit): Promise<unknown> {
   const rating = request.query.rating;
   const domain = request.query.domain;
   const remoteIp = request.info.remoteAddress;
@@ -22,7 +23,7 @@ export async function handleReview(request: Request, h: ResponseToolkit) {
   // Pick a random campaign
   // From https://www.w3schools.com/JS/js_random.asp:
   // Math.floor(Math.random() * (max - min) ) + min;
-  let campaign = campaigns[Math.floor(Math.random() * (campaigns.length))];
+  const campaign = campaigns[Math.floor(Math.random() * (campaigns.length))];
 
   const returnData = {
     reviewSiteUrl: campaign.reviewSiteUrl,

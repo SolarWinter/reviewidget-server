@@ -1,4 +1,4 @@
-import { Request, ResponseToolkit } from "@hapi/hapi";
+import { Request, ResponseToolkit, ResponseObject } from "@hapi/hapi";
 
 // TODO split into separate type file
 import { Site } from "./queries";
@@ -11,16 +11,16 @@ declare module "@hapi/hapi" {
     id: string;
     email: string;
   }
-};
+}
 
-async function addSiteRender(_request: Request, h: ResponseToolkit) {
+async function addSiteRender(_request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   return h.view("addsite");
 }
 
-async function addSitePost(request: Request, h: ResponseToolkit) {
+async function addSitePost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   try {
     const incoming: Site = (request.payload as Site);
-    let siteDetails: Site = {
+    const siteDetails: Site = {
       user_id: parseInt(request.auth.credentials.id),
       domain: incoming.domain,
       // TODO make it a checkbox
@@ -36,17 +36,17 @@ async function addSitePost(request: Request, h: ResponseToolkit) {
   }
 }
 
-async function showSites(request: Request, h: ResponseToolkit ) {
+async function showSites(request: Request, h: ResponseToolkit ): Promise<ResponseObject> {
   const sites = await getSitesForUser(request.auth.credentials.id);
   return h.view("sites", { sites: sites });
 }
 
-async function showSite(request: Request, h: ResponseToolkit) {
+async function showSite(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const site = await getSiteById(request.params.siteId, request.auth.credentials.id);
   return h.view("site", { site: site });
 }
 
-async function deleteSiteRender(request: Request, h: ResponseToolkit) {
+async function deleteSiteRender(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const site = await getSiteById(request.params.siteId, request.auth.credentials.id);
   const u = new URL(request.headers.referer);
   return h.view("deleteSite", { site: site, previousUrl: u.pathname });
@@ -54,22 +54,22 @@ async function deleteSiteRender(request: Request, h: ResponseToolkit) {
 
 interface UrlPayload {
   previousUrl: string;
-};
-async function deleteSitePost(request: Request, h: ResponseToolkit) {
+}
+async function deleteSitePost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const site = await getSiteById(request.params.siteId, request.auth.credentials.id);
-  await deleteSite(request, site.id, request.auth.credentials.id);
+  await deleteSite(request, site.id!, request.auth.credentials.id);
   return h.redirect((request.payload as UrlPayload).previousUrl);
 }
 
-async function editSiteRender(request: Request, h: ResponseToolkit) {
+async function editSiteRender(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const site = await getSiteById(request.params.siteId, request.auth.credentials.id);
   return h.view("editSite", { site: site });
 }
 
-async function editSitePost(request: Request, h: ResponseToolkit) {
+async function editSitePost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   try {
     const incoming: Site = (request.payload as Site);
-    let siteDetails: Site = {
+    const siteDetails: Site = {
       user_id: parseInt(request.auth.credentials.id),
       domain: incoming.domain,
       // TODO make it a checkbox

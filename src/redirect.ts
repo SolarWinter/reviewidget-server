@@ -1,9 +1,9 @@
-import { Request, ResponseToolkit, ServerRoute } from "@hapi/hapi";
+import { Request, ResponseObject, ResponseToolkit, ServerRoute } from "@hapi/hapi";
 
 import { getActiveCampaignsForDomain, addRedirectEntry } from "./queries";
 import { Campaign } from "./queries";
 
-export async function handleRedirect(request: Request, h: ResponseToolkit) {
+export async function handleRedirect(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const domain = request.query.domain;
   const remoteIp = request.info.remoteAddress;
 
@@ -19,7 +19,7 @@ export async function handleRedirect(request: Request, h: ResponseToolkit) {
   // Pick a random campaign
   // From https://www.w3schools.com/JS/js_random.asp:
   // Math.floor(Math.random() * (max - min) ) + min;
-  let campaign = campaigns[Math.floor(Math.random() * (campaigns.length))];
+  const campaign = campaigns[Math.floor(Math.random() * (campaigns.length))];
 
   request.log(["info", "review"], `Redirecting to ${campaign.reviewSiteUrl}`);
   // Tell Typescript we know the ID will be present (as it's read from the database).
