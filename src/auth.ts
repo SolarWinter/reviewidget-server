@@ -1,7 +1,8 @@
-require("dotenv").config();
+import 'dotenv/config';
 'use strict';
 
-import { Server, Request, ServerRoute } from "@hapi/hapi";
+import { Server, ServerRoute } from "@hapi/hapi";
+import { Request, ResponseToolkit, ResponseObject } from "@hapi/hapi";
 
 import { getUserById, getUserByEmail, getUserByEmailAndPassword } from "./queries";
 import { createUser } from "./queries";
@@ -11,9 +12,12 @@ const production: boolean = (process.env.NODE_ENV === "production");
 interface IncomingUser {
   email: string;
   password: string;
-};
+}
+interface Session {
+  id: number;
+}
 
-export function registerAuth(server: Server) {
+export function registerAuth(server: Server): void {
   server.auth.strategy('session', 'cookie', {
     cookie: {
       name: 'reviewidget',
@@ -22,7 +26,7 @@ export function registerAuth(server: Server) {
     },
     redirectTo: '/login',
     appendNext: true,
-    validateFunc: async function (request: Request, session: any) {
+    validateFunc: async function (request: Request, session: Session) {
       const account = await getUserById(request, session.id);
       if (!account) {
         return { valid: false };
@@ -47,7 +51,7 @@ export const authRoutes: ServerRoute[] = [
           redirectTo: false
         }
       },
-      handler: async (request, h) => {
+      handler: async (request: Request, h: ResponseToolkit): Promise<ResponseObject> => {
         if (request.auth.isAuthenticated) {
           return h.redirect(request.query.next || "/");
         }
@@ -67,7 +71,7 @@ export const authRoutes: ServerRoute[] = [
           redirectTo: false
         }
       },
-      handler: async (request, h) => {
+      handler: async (request: Request, h: ResponseToolkit): Promise<ResponseObject> => {
         if (request.auth.isAuthenticated) {
           return h.redirect(request.query.next);
         }
@@ -107,7 +111,7 @@ export const authRoutes: ServerRoute[] = [
           redirectTo: false
         }
       },
-      handler: async (request, h) => {
+      handler: async (request: Request, h: ResponseToolkit): Promise<ResponseObject> => {
         if (request.auth.isAuthenticated) {
           return h.redirect(request.query.next || "/");
         }
@@ -123,7 +127,7 @@ export const authRoutes: ServerRoute[] = [
       auth: {
         mode: 'try'
       },
-      handler: async (request, h) => {
+      handler: async (request: Request, h: ResponseToolkit): Promise<ResponseObject> => {
         const o: IncomingUser = (request.payload as IncomingUser);
         if (!o.email || !o.password) {
           return h.view("login", { message: "email and password are required." });
@@ -134,7 +138,8 @@ export const authRoutes: ServerRoute[] = [
         if (!account) {
           return h.view("login", { message: "email or password is wrong." });
         } else {
-          request.cookieAuth.set({ id: account.id });
+          const session: Session = { id: account.id }
+          request.cookieAuth.set(session);
           request.log("debug", "Next is " + request.query.next);
           return h.redirect(request.query.next || "/");
         }
@@ -146,7 +151,7 @@ export const authRoutes: ServerRoute[] = [
     method: 'GET',
     path: '/logout',
     options: {
-      handler: (request, h) => {
+      handler: (request: Request, h: ResponseToolkit): ResponseObject => {
         request.cookieAuth.clear();
         return h.redirect('/');
       }

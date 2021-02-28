@@ -1,11 +1,15 @@
-require("dotenv").config();
+import 'dotenv/config';
 'use strict';
 
 import Hapi from "@hapi/hapi";
-import { Server } from "@hapi/hapi";
+import { Request, Server, Plugin } from "@hapi/hapi";
 import Path from "path";
 
-let hapipino: any, laabr: any;
+import hapiCookie from "@hapi/cookie";
+import hapiVision from "@hapi/vision";
+import hapiInert from "@hapi/inert";
+
+let hapipino: Plugin<unknown>, laabr: Plugin<unknown>;
 if (process.env.NODE_ENV === "production") {
   hapipino = require("hapi-pino");
 } else  {
@@ -23,16 +27,9 @@ export let server: Server;
 
 const production: boolean = (process.env.NODE_ENV === "production");
 
-declare module '@hapi/hapi' {
-  interface Request {
-    cookieAuth: any
-  }
-};
-
 function buildVisionContext(request: Request) {
   return {
-    // TODO fix it
-    loggedIn: (request as any).auth.isAuthenticated
+    loggedIn: request.auth.isAuthenticated
   };
 }
 
@@ -66,12 +63,12 @@ async function registerServerPlugins(server: Server) {
   } else {
     await server.register({ plugin: laabr, options: {} });
   }
-  await server.register(require("@hapi/cookie"));
-  await server.register(require("@hapi/vision"));
-  await server.register(require('@hapi/inert'));
+  await server.register(hapiCookie);
+  await server.register(hapiVision);
+  await server.register(hapiInert);
 }
 
-export const init = async () => {
+export const init = async function(): Promise<Server> {
   server = Hapi.server({
     port: process.env.PORT,
     host: '0.0.0.0'
@@ -91,7 +88,7 @@ export const init = async () => {
         mode: 'try'
       }
     },
-    handler: function(request, _h) {
+    handler: function(request) {
       request.log(["debug"], "PING received");
       server.log(["debug"], "PING received");
       return { message: "PONG" };
@@ -142,7 +139,7 @@ export const init = async () => {
   return server;
 };
 
-export const start = async () => {
+export const start = async function (): Promise<void> {
   return server.start();
 };
 
