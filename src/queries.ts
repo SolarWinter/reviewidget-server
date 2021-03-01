@@ -7,6 +7,8 @@ import knexConfig from './knexfile';
 
 let config: Knex.Config;
 switch (process.env.NODE_ENV) {
+  case undefined:
+    // If undefined, fall through to development.
   case "development":
     config = knexConfig.development;
     break;
