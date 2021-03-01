@@ -1,6 +1,5 @@
 import { Request, Server } from "@hapi/hapi";
 import bcrypt from "bcrypt";
-import knexCleaner from "knex-cleaner";
 
 import Knex from "knex";
 import knexConfig from './knexfile';
@@ -280,25 +279,6 @@ export async function deleteCampaign(request: Request, campaignId: number | stri
   } else {
     return Promise.reject({ message: "Error deleting campaign" });
   }
-}
-
-/* Used for testing */
-// TODO Do better than unknown
-export async function dbClean(): Promise<unknown> {
-  const options = { ignoreTables: ["knex_migrations", "knex_migrations_lock"] };
-  // Ignoring the knexCleaner line because of https://github.com/steven-ferguson/knex-cleaner/issues/42
-  // @ts-ignore
-  return knexCleaner.clean(database, options);
-}
-
-// TODO Do better than unknown
-export async function dbCleanAndSeed(): Promise<unknown> {
-  // TODO add check for TEST env?
-  const options = { ignoreTables: ["knex_migrations", "knex_migrations_lock"] };
-  // Ignoring the knexCleaner line because of https://github.com/steven-ferguson/knex-cleaner/issues/42
-  // @ts-ignore
-  await knexCleaner.clean(database, options);
-  return database.seed.run();
 }
 
 export async function dbClose(): Promise<unknown>  {

@@ -6,7 +6,7 @@ const expect = chai.expect;
 const HTMLParser = require("node-html-parser");
 
 const { init } = require("../lib/server");
-const { dbCleanAndSeed } = require("../lib/queries");
+const { dbCleanAndSeed } = require("./fixtures");
 
 const newSiteData = {
   domain: "example.com",

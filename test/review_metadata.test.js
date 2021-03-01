@@ -4,7 +4,7 @@ const chai = require("chai");
 const expect = chai.expect;
 
 const { init } = require("../lib/server");
-const { dbCleanAndSeed, dbClean } = require("../lib/queries");
+const { dbCleanAndSeed, dbClean } = require("./fixtures");
 
 describe("review", () => {
   let server;

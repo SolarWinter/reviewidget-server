@@ -4,7 +4,7 @@ const chai = require("chai");
 const expect = chai.expect;
 
 const { init } = require("../lib/server");
-const { dbCleanAndSeed } = require("../lib/queries");
+const { dbCleanAndSeed } = require("./fixtures");
 
 describe("redirect", () => {
   let server;
