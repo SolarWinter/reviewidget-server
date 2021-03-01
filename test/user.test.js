@@ -4,7 +4,7 @@ const chai = require("chai");
 const expect = chai.expect;
 
 const { init } = require("../lib/server");
-const { dbClean, dbCleanAndSeed } = require("../lib/queries");
+const { dbClean, dbCleanAndSeed } = require("./fixtures");
 const { isLoginSignupPage } = require("./utils");
 
 describe("user tests", () => {

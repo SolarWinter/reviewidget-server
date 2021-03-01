@@ -6,7 +6,7 @@ const expect = chai.expect;
 const HTMLParser = require("node-html-parser");
 
 const { init } = require("../lib/server");
-const { dbClean, dbCleanAndSeed } = require("../lib/queries");
+const { dbClean, dbCleanAndSeed } = require("./fixtures");
 const { isLoginSignupPage } = require("./utils");
 
 describe("auth tests", () => {

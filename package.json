@@ -15,8 +15,9 @@
     "test:run": "NODE_ENV=test mocha --require test/fixtures.js",
     "test:ci": "yarn audit --level high && yarn lint:ci && yarn test:build && mkdir -p reports && NODE_ENV=test MOCHA_FILE=reports/results.xml mocha --require test/fixtures.js --reporter mocha-junit-reporter",
     "test": "yarn test:build && yarn test:run",
+    "minify:css": "curl -X POST -s --data-urlencode 'input@static/css/style.css' https://cssminifier.com/raw > static/css/style.min.css",
     "build:code": "tsc -p tsconfig-prod.json",
-    "build:css:prod": "NODE_ENV=production tailwindcss-cli build src/css/style.css -o static/css/style.css",
+    "build:css:prod": "NODE_ENV=production tailwindcss-cli build src/css/style.css -o static/css/style.css && yarn minify:css",
     "build:css:dev": "tailwindcss-cli build src/css/style.css -o static/css/style.css",
     "build": "run-p build:css:prod build:code",
     "start": "NODE_ENV=production node lib/main.js"
