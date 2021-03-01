@@ -57,7 +57,6 @@ async function addCampaignPost(request: Request, h: ResponseToolkit): Promise<Re
       finish: incoming.finish,
       active: incoming.active
     };
-    console.log("campaignDetails:", campaignDetails);
     const id = await createCampaign(request, campaignDetails);
     request.log(`Created campaign id ${id}`);
     return h.redirect("/campaigns/" + id);
@@ -86,7 +85,6 @@ async function deleteCampaignPost(request: Request, h: ResponseToolkit): Promise
 async function editCampaignRender(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const campaign: Campaign = await getCampaignById(request.params.campaignId);
   const domains = await getSitesForUser(request.auth.credentials.id, ["domain", "id"]);
-  console.log("editCampaignRender - rendering data", { campaign: campaign, domains: domains, moment: moment });
   return h.view("editCampaign", { campaign: campaign, domains: domains, moment: moment});
 }
 
