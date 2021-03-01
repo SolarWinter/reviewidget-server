@@ -73,7 +73,8 @@ async function addCampaignPost(request: Request, h: ResponseToolkit): Promise<Re
 async function deleteCampaignRender(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const campaign: Campaign = await getCampaignById(request.params.campaignId);
   const u = new URL(request.headers.referer);
-  return h.view("deleteCampaign", { campaign: campaign, previousUrl: u.pathname });
+  const site = await getSiteById(campaign.site_id, request.auth.credentials.id);
+  return h.view("deleteCampaign", { campaign: { ...campaign, domain: site.domain }, previousUrl: u.pathname, moment: moment });
 }
 
 async function deleteCampaignPost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
