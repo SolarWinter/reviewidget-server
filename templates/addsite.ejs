@@ -1,15 +1,22 @@
 <%- include("header"); -%>
 
 <form method="POST">
-  <ul>
-    <li><label for="domain">Domain (e.g. www.google.com)</label><input type="text" name="domain" placeholder="your.domain.com" required /></li>
-    <li><label for="thankText">The text thanking the user for the rating</label><textarea name="thankText" rows="5" cols="20" required></textarea></li>
-    <li><label for="reviewSiteName">The name of the review site</label><input type="text" name="reviewSiteName" placeholder="Yelp reviews" required /></li>
-    <li><label for="reviewSiteUrl">The web address of the review site</label><input type="text" name="reviewSiteUrl" placeholder="https://www.yelp.com/" required /></li>
-    <li><label for="reviewThreshold">The threshold for asking the user to submit a review.</label><input type="number" name="reviewThreshold" value="5" required /></li>
-  </ul>
-  <input type="submit" value="Add">
+  <div class="mx-auto my-3 py-3 grid grid-cols-1 sm:grid-cols-4 md:grid-cols-6">
+    <div class="sm:col-span-1 py-2">
+      <label for="domain">Domain (e.g. www.example.com)</label>
+    </div>
+    <div class="sm:col-span-1 md:col-span-2">
+      <input type="text" name="domain" placeholder="your.domain.com" required />
+    </div>
+    <div class="sm:col-span-1 pt-4 mx-auto">
+      <button type="button" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        Cancel
+      </button>
+      <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        Add
+      </button>
+    </div>
+  </div>
 </form>
-</ul>
 
 <%- include("footer"); -%>
