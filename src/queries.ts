@@ -2,7 +2,8 @@ import { Request, Server } from "@hapi/hapi";
 import bcrypt from "bcrypt";
 
 import Knex from "knex";
-import knexConfig from './knexfile';
+/* @ts-ignore:disable-next-line */
+import knexConfig from '../knexfile';
 
 let config: Knex.Config;
 switch (process.env.NODE_ENV) {
