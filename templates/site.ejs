@@ -19,6 +19,51 @@
       </div>
     </dl>
   </div>
+  <div class="px-4 sm:p-0 py-5 sm:p-0">
+    <span class="text-sm sm:px-6 font-medium text-gray-700">
+      Site campaigns
+    </span>
+    <div class="flex flex-col sm:px-6 py-4">
+      <div class="-my-2 overflow-x-auto">
+        <div class="py-2 align-middle inline-block min-w-full">
+          <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
+                    Review site
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
+                    Start
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
+                    Finish
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <% campaigns.forEach(function(campaign){ %>
+                  <tr class="bg-white">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                      <a href="/campaigns/<%= campaign.id %>">
+                        <%= campaign.reviewSiteName %>
+                      </a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <%= moment(campaign.start).fromNow() %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <%= moment(campaign.finish).fromNow() %>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
 </div>
 
 <p>

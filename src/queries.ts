@@ -254,6 +254,13 @@ export async function getCampaignsForUser(userId: number | string): Promise<Camp
     }))
 }
 
+export async function getCampaignsForSiteId(siteId: number | string): Promise<Campaign[]> {
+  siteId = ensureInt(siteId);
+  return runQuery(database
+    .from('campaigns')
+    .where({ site_id: siteId }))
+}
+
 export async function getActiveCampaignsForDomain(domain: string): Promise<Campaign[]> {
   return runQuery(database
     .from('campaigns')

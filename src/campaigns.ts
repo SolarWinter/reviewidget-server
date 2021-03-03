@@ -20,18 +20,8 @@ async function showCampaigns(request: Request, h: ResponseToolkit): Promise<Resp
 
 async function showCampaign(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const campaign: Campaign = await getCampaignById(request.params.campaignId);
-  console.log("campaign", campaign);
-  if (!campaign) {
-    throw Boom.notFound(`campaign ${request.params.campaignId} not found`);
-  }
-  const site = await getSiteById(campaign.site_id, campaign.id!);
-  if (!site) {
-    throw Boom.notFound(`site ${campaign.site_id} not found`);
-  }
+  const site = await getSiteById(campaign.site_id, request.auth.credentials.id);
   const redirects = await getRedirectsForCampaign(request, request.params.campaignId);
-  if (!redirects) {
-    throw Boom.notFound(`redirects for campaign ${request.params.campaignId} not found`);
-  }
   return h.view("campaign", { campaign: { ...campaign, domain: site.domain }, moment: moment, redirects: redirects});
 }
 

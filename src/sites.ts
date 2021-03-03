@@ -4,7 +4,8 @@ import { Request, ResponseToolkit, ResponseObject } from "@hapi/hapi";
 import { Site } from "./queries";
 
 import { createSite, deleteSite, updateSite } from "./queries";
-import { getSiteById, getSitesForUser } from "./queries";
+import { getSiteById, getSitesForUser, getCampaignsForSiteId } from "./queries";
+import moment from "moment";
 
 declare module "@hapi/hapi" {
   interface AuthCredentials {
@@ -43,7 +44,8 @@ async function showSites(request: Request, h: ResponseToolkit ): Promise<Respons
 
 async function showSite(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const site = await getSiteById(request.params.siteId, request.auth.credentials.id);
-  return h.view("site", { site: site });
+  const campaigns = await getCampaignsForSiteId(request.params.siteId);
+  return h.view("site", { site: site, campaigns: campaigns, moment: moment });
 }
 
 async function deleteSiteRender(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
