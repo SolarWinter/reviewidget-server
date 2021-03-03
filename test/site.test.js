@@ -96,4 +96,12 @@ describe("site tests", () => {
     expect(res.statusCode).to.equal(302);
     expect(res.headers.location).to.equal("/login?next=%2Fsites%2Fadd");
   });
+
+  it("gets 404 for a site that doesn't exist", async () => {
+    await dbCleanAndSeed();
+
+    const res = await server.inject({ url: "/sites/65535",
+      auth: { strategy: "session", credentials: { id: 1 } }})
+    expect(res.statusCode).to.equal(404);
+  })
 })
