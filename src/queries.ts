@@ -1,6 +1,8 @@
 import { Request, Server } from "@hapi/hapi";
 import bcrypt from "bcrypt";
 
+import { LookupResult } from "node-iplocate";
+
 import Knex from "knex";
 /* @ts-ignore:disable-next-line */
 import knexConfig from '../knexfile';
@@ -47,6 +49,12 @@ export interface User {
   passwordHash: string;
 }
 
+export interface Redirect {
+  id: number;
+  campaign_id: number;
+  remoteIp: string;
+}
+
 // import { QueryBuilder } from "knex";
 // async function printSql(query: QueryBuilder, msg?: string) {
 //   const sql = await query.toSQL();
@@ -56,7 +64,7 @@ export interface User {
 //   console.log(sql.sql);
 // }
 
-function ensureInt(i : number | string) : number {
+export function ensureInt(i : number | string) : number {
   if (typeof i == "string") {
     i = parseInt(i);
   }
@@ -205,10 +213,10 @@ export async function updateSite(_request: Request, siteId: number | string, sit
 }
 
 // TODO Do better than unknown
-export function addRedirectEntry(site_id: number, remote: string): Promise<unknown> {
+export function addRedirectEntry(campaign_id: number, remote: string, geoIpData: LookupResult): Promise<unknown> {
   return database
     .from("redirects")
-    .insert({ site_id: site_id, remoteIp: remote }, ["id"]);
+    .insert({ campaign_id: campaign_id, remoteIp: remote, geoIpData: geoIpData }, ["id"]);
 }
 
 export async function getCampaignsForUser(userId: number | string): Promise<Campaign[]> {
@@ -280,6 +288,14 @@ export async function deleteCampaign(request: Request, campaignId: number | stri
   } else {
     return Promise.reject({ message: "Error deleting campaign" });
   }
+}
+
+export async function getRedirectsForCampaign(request: Request, campaignId: number | string): Promise<Redirect[]> {
+  campaignId = ensureInt(campaignId);
+  request.log(["campaigns"], `Getting redirects for campaign ${campaignId}`);
+  // TODO do we need to filter these before returning, to remove elements?
+  return database("redirects")
+    .where({ campaign_id: campaignId });
 }
 
 export async function dbClose(): Promise<unknown>  {
