@@ -3,7 +3,7 @@ import { Request, ResponseToolkit, ResponseObject, ServerRoute } from "@hapi/hap
 import moment from "moment";
 
 import { getCampaignsForUser, getCampaignById, getSiteById, getSitesForUser } from "./queries";
-import { createCampaign, updateCampaign, deleteCampaign } from "./queries";
+import { createCampaign, updateCampaign, deleteCampaign, getRedirectsForCampaign } from "./queries";
 import { Campaign, Site } from "./queries";
 
 declare module "@hapi/hapi" {
@@ -21,7 +21,8 @@ async function showCampaigns(request: Request, h: ResponseToolkit): Promise<Resp
 async function showCampaign(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const campaign: Campaign = await getCampaignById(request.params.campaignId);
   const site = await getSiteById(campaign.site_id, request.auth.credentials.id);
-  return h.view("campaign", { campaign: { ...campaign, domain: site.domain }, moment: moment});
+  const redirects = await getRedirectsForCampaign(request, request.params.campaignId);
+  return h.view("campaign", { campaign: { ...campaign, domain: site.domain }, moment: moment, redirects: redirects});
 }
 
 async function addCampaignRender(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
