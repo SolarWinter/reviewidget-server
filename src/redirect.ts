@@ -1,25 +1,25 @@
 import { Request, ResponseObject, ResponseToolkit, ServerRoute } from "@hapi/hapi";
 import iplocate from "node-iplocate";
-
-import { LookupResult } from "node-iplocate";
+import { Boom } from "@hapi/boom";
 
 import { getCampaignById, addRedirectEntry } from "./queries";
 import { Campaign } from "./queries";
 
-export async function handleRedirect(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
+export async function handleRedirect(request: Request, h: ResponseToolkit): Promise<ResponseObject | Boom> {
   const domain = request.query.domain;
   const campaignId = request.query.campaignId;
   const remoteIp = request.info.remoteAddress;
 
   request.log(["review"], `Received redirect for ${domain} from ${remoteIp}`);
   if (!campaignId) {
+    request.log(["review"], "Campaign ID is missing.");
     const response = h.response();
     response.code(404);
     return response;
   }
 
   const campaign: Campaign = await getCampaignById(campaignId);
-  if (!campaign || !campaign.active) {
+  if (!campaign.active) {
     // No active campaigns
     const response = h.response()
     response.code(404);

@@ -1,5 +1,5 @@
 import { Request, ResponseToolkit, ResponseObject, ServerRoute } from "@hapi/hapi";
-
+import Boom from "@hapi/boom";
 import moment from "moment";
 
 import { getCampaignsForUser, getCampaignById, getSiteById, getSitesForUser } from "./queries";
@@ -20,8 +20,18 @@ async function showCampaigns(request: Request, h: ResponseToolkit): Promise<Resp
 
 async function showCampaign(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const campaign: Campaign = await getCampaignById(request.params.campaignId);
-  const site = await getSiteById(campaign.site_id, request.auth.credentials.id);
+  console.log("campaign", campaign);
+  if (!campaign) {
+    throw Boom.notFound(`campaign ${request.params.campaignId} not found`);
+  }
+  const site = await getSiteById(campaign.site_id, campaign.id!);
+  if (!site) {
+    throw Boom.notFound(`site ${campaign.site_id} not found`);
+  }
   const redirects = await getRedirectsForCampaign(request, request.params.campaignId);
+  if (!redirects) {
+    throw Boom.notFound(`redirects for campaign ${request.params.campaignId} not found`);
+  }
   return h.view("campaign", { campaign: { ...campaign, domain: site.domain }, moment: moment, redirects: redirects});
 }
 
@@ -124,6 +134,16 @@ export const campaignRoutes: ServerRoute[] = [
   },
   {
     method: "GET",
+    path: "/campaigns/",
+    handler: showCampaigns
+  },
+  {
+    method: "GET",
+    path: "/campaigns/{campaignId}",
+    handler: showCampaign
+  },
+  {
+    method: "GET",
     path: "/campaigns/add",
     handler: addCampaignRender
   },
@@ -131,11 +151,6 @@ export const campaignRoutes: ServerRoute[] = [
     method: "POST",
     path: "/campaigns/add",
     handler: addCampaignPost
-  },
-  {
-    method: "GET",
-    path: "/campaigns/{campaignId}",
-    handler: showCampaign
   },
 
   {

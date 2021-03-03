@@ -81,19 +81,27 @@ export const authRoutes: ServerRoute[] = [
           return h.view("signup",
                         { message: "You need to supply an email address and password" });
         }
-        const account = await getUserByEmail(request, o.email)
-        if (!account) {
-          try {
-            await createUser(request, o.email, o.password);
-            return h.redirect("/login");
-          } catch(err) {
-            console.error("Error occurred during signup", err);
-            request.log(["users", "error"], "Error occurred during signup: " + JSON.stringify(err));
-            return h.view("signup", { message: "Sorry, an error occcurred." });
-          }
-        } else {
+
+        try {
+          await getUserByEmail(request, o.email)
           request.log(`Account already found with email ${o.email} redirecting to login`);
           return h.redirect("/login");
+        } catch (err) {
+          // If it's a 404 error, that's fine, we don't want to find them really.
+          if (!err.isBoom || (err.output.statusCode != 404)) {
+            console.error("Error signing up");
+            console.error(err);
+            throw err;
+          }
+        }
+
+        try {
+          await createUser(request, o.email, o.password);
+          return h.redirect("/login");
+        } catch(err) {
+          console.error("Error occurred during signup", err);
+          request.log(["users", "error"], "Error occurred during signup: " + JSON.stringify(err));
+          return h.view("signup", { message: "Sorry, an error occcurred." });
         }
       }
     }
@@ -137,12 +145,12 @@ export const authRoutes: ServerRoute[] = [
         const account = await getUserByEmailAndPassword(request, o.email, o.password)
         if (!account) {
           return h.view("login", { message: "email or password is wrong." });
-        } else {
-          const session: Session = { id: account.id }
-          request.cookieAuth.set(session);
-          request.log("debug", "Next is " + request.query.next);
-          return h.redirect(request.query.next || "/");
         }
+
+        const session: Session = { id: account.id }
+        request.cookieAuth.set(session);
+        request.log("debug", "Next is " + request.query.next);
+        return h.redirect(request.query.next || "/");
       }
     }
   },

@@ -1,9 +1,11 @@
 import { Request, Server } from "@hapi/hapi";
 import bcrypt from "bcrypt";
+import Boom from "@hapi/boom";
 
 import { LookupResult } from "node-iplocate";
 
 import Knex from "knex";
+import { QueryBuilder } from "knex";
 /* @ts-ignore:disable-next-line */
 import knexConfig from '../knexfile';
 
@@ -55,7 +57,6 @@ export interface Redirect {
   remoteIp: string;
 }
 
-// import { QueryBuilder } from "knex";
 // async function printSql(query: QueryBuilder, msg?: string) {
 //   const sql = await query.toSQL();
 //   if (msg) {
@@ -71,16 +72,28 @@ export function ensureInt(i : number | string) : number {
   return i;
 }
 
+async function runQuery(query: QueryBuilder) {
+  // console.log("runQuery running query", query);
+  const result = await query;
+  // console.log("result", result);
+  if (!result) {
+    // console.log("runQuery running query", query);
+    // console.log("not found");
+    throw Boom.notFound();
+  }
+  return result;
+}
+
 export function getAllSites(): Promise<Site[]> {
   return database('sites');
 }
 
 // Used only for getting review data so we can supply it to the widget
 export function getSiteByDomain(site: string): Promise<Site> {
-  return database
+  return runQuery(database
     .first()
     .from("sites")
-    .where({ domain: site });
+    .where({ domain: site }));
 }
 
 export function getSitesForUser(userId: number | string, fields?: string[]): Promise<Site[]> {
@@ -89,22 +102,23 @@ export function getSitesForUser(userId: number | string, fields?: string[]): Pro
   if (fields) {
     query = query.select(fields);
   }
-  return query.where({ user_id: userId });
+  query = query.where({ user_id: userId });
+  return runQuery(query);
 }
 
 export function getSiteById(siteId: number | string, userId: number | string): Promise<Site> {
   siteId = ensureInt(siteId);
   userId = ensureInt(userId);
-  return database
+  return runQuery(database
     .first()
     .from("sites")
-    .where({ id: siteId, user_id: userId });
+    .where({ id: siteId, user_id: userId }));
 }
 
 export function addReview(site: string, rating: number, remote: string): Promise<number> {
-  return database
+  return runQuery(database
     .from("reviews")
-    .insert({ domain: site, rating: rating, remoteIp: remote }, ["id"]);
+    .insert({ domain: site, rating: rating, remoteIp: remote }, ["id"]));
 }
 
 // TODO Do better than unknown
@@ -122,10 +136,10 @@ export async function dbMigrate(server: Server): Promise<unknown> {
 }
 
 export async function getUserById(_request: Request, userId: number): Promise<User> {
-  const account = await database
+  const account = await runQuery(database
     .first()
     .from("users")
-    .where({ id: userId });
+    .where({ id: userId }));
   if (account) {
     delete account.passwordHash;
   }
@@ -133,10 +147,10 @@ export async function getUserById(_request: Request, userId: number): Promise<Us
 }
 
 export async function getUserByEmail(_request: Request, email: string): Promise<User> {
-  const account = await database
+  const account = await runQuery(database
     .first()
     .from("users")
-    .where({ email: email });
+    .where({ email: email }));
   if (account) {
     delete account.passwordHash;
   }
@@ -144,15 +158,26 @@ export async function getUserByEmail(_request: Request, email: string): Promise<
 }
 
 export async function getUserByEmailAndPassword(_request: Request, email: string, password: string): Promise<User> {
-  let account = await database
-    .first()
-    .from("users")
-    .where({ email: email });
-  if (account) {
+  let account;
+  try {
+    account = await runQuery(database
+      .first()
+      .from("users")
+      .where({ email: email }));
+
     if (await bcrypt.compare(password, account.passwordHash)) {
       delete account.passwordHash;
     } else {
       account = null;
+    }
+  } catch (err) {
+    if (err.isBoom && (err.output.statusCode == 404)) {
+      // User not found
+      account = null;
+    } else {
+      console.error("Server error getting user");
+      console.error(err);
+      throw err;
     }
   }
 
@@ -162,7 +187,7 @@ export async function getUserByEmailAndPassword(_request: Request, email: string
 export async function createUser(request: Request, email: string, password: string): Promise<User> {
   request.log(["users"], `Creating user ${email}`);
   const hash = await bcrypt.hash(password, parseInt(process.env.BCRYPT_SALT_ROUNDS!));
-  const result = await database("users").insert({ email: email, passwordHash: hash }, ["id"]);
+  const result = await runQuery(database("users").insert({ email: email, passwordHash: hash }, ["id"]));
   if (result.length == 1) {
     return Promise.resolve(result[0].id);
   } else {
@@ -173,7 +198,7 @@ export async function createUser(request: Request, email: string, password: stri
 
 export async function createSite(request: Request, siteDetails: Site): Promise<number> {
   request.log(["sites"], "Creating site" + siteDetails);
-  const result = await database("sites").insert(siteDetails, ["id"]);
+  const result = await runQuery(database("sites").insert(siteDetails, ["id"]));
   if (result.length == 1) {
     return Promise.resolve(result[0].id);
   } else {
@@ -186,10 +211,10 @@ export async function deleteSite(request: Request, siteId: number | string, user
   siteId = ensureInt(siteId);
   userId = ensureInt(userId);
   request.log(["sites"], `Deleting site ${siteId} for ${userId}`);
-  const result: number[] = await database("sites")
+  const result: number[] = await runQuery(database("sites")
     .where({ id: siteId, user_id: userId })
     .returning("id")
-    .del();
+    .del());
 
   if (result.length == 1 && result[0] == siteId) {
     return Promise.resolve(result[0]);
@@ -200,10 +225,10 @@ export async function deleteSite(request: Request, siteId: number | string, user
 
 export async function updateSite(_request: Request, siteId: number | string, siteDetails: Site): Promise<number> {
   siteId = ensureInt(siteId);
-  const result: number[] = await database("sites")
+  const result: number[] = await runQuery(database("sites")
     .where({ id: siteId })
     .returning("id")
-    .update(siteDetails);
+    .update(siteDetails));
 
   if (result.length == 1 && result[0] == siteId) {
     return Promise.resolve(result[0]);
@@ -214,43 +239,43 @@ export async function updateSite(_request: Request, siteId: number | string, sit
 
 // TODO Do better than unknown
 export function addRedirectEntry(campaign_id: number, remote: string, geoIpData: LookupResult): Promise<unknown> {
-  return database
+  return runQuery(database
     .from("redirects")
-    .insert({ campaign_id: campaign_id, remoteIp: remote, geoIpData: geoIpData }, ["id"]);
+    .insert({ campaign_id: campaign_id, remoteIp: remote, geoIpData: geoIpData }, ["id"]));
 }
 
 export async function getCampaignsForUser(userId: number | string): Promise<Campaign[]> {
   userId = ensureInt(userId);
-  return database
+  return runQuery(database
     .from('campaigns')
     .select(["campaigns.*", "sites.domain"])
     .innerJoin('sites', {
       'campaigns.site_id': 'sites.id', 'sites.user_id': userId
-    })
+    }))
 }
 
 export async function getActiveCampaignsForDomain(domain: string): Promise<Campaign[]> {
-  return database
+  return runQuery(database
     .from('campaigns')
     .select(["campaigns.*", "sites.domain"])
     .innerJoin('sites', {
       'campaigns.site_id': 'sites.id'
     })
-    .where({ 'sites.domain': domain, 'campaigns.active': true })
+    .where({ 'sites.domain': domain, 'campaigns.active': true }))
 }
 
 export function getCampaignById(campaignId: number | string): Promise<Campaign> {
   campaignId = ensureInt(campaignId);
-  return database
+  return runQuery(database
     .first()
     .from("campaigns")
-    .where({ id: campaignId });
+    .where({ id: campaignId }));
 }
 
 export async function createCampaign(request: Request, campaignData: Campaign): Promise<number> {
   request.log(["campaigns"], `Creating campaign for site ${campaignData.site_id}`);
   campaignData.site_id = ensureInt(campaignData.site_id);
-  const result = await database("campaigns").insert(campaignData, ["id"]);
+  const result = await runQuery(database("campaigns").insert(campaignData, ["id"]));
   if (result.length == 1) {
     return Promise.resolve(result[0].id);
   } else {
@@ -263,10 +288,10 @@ export async function createCampaign(request: Request, campaignData: Campaign): 
 
 export async function updateCampaign(_request: Request, campaignId: number | string, campaignDetails: Campaign): Promise<number> {
   campaignId = ensureInt(campaignId);
-  const result: number[] = await database("campaigns")
+  const result: number[] = await runQuery(database("campaigns")
     .where({ id: campaignId })
     .returning("id")
-    .update(campaignDetails);
+    .update(campaignDetails));
 
   if (result.length == 1 && result[0] == campaignId) {
     return Promise.resolve(result[0]);
@@ -278,10 +303,10 @@ export async function updateCampaign(_request: Request, campaignId: number | str
 export async function deleteCampaign(request: Request, campaignId: number | string): Promise<number> {
   campaignId = ensureInt(campaignId);
   request.log(["campaigns"], `Deleting campaign ${campaignId}`);
-  const result: number[] = await database("campaigns")
+  const result: number[] = await runQuery(database("campaigns")
     .where({ id: campaignId })
     .returning("id")
-    .del();
+    .del());
 
   if (result.length == 1 && result[0] == campaignId) {
     return Promise.resolve(result[0]);
@@ -294,8 +319,7 @@ export async function getRedirectsForCampaign(request: Request, campaignId: numb
   campaignId = ensureInt(campaignId);
   request.log(["campaigns"], `Getting redirects for campaign ${campaignId}`);
   // TODO do we need to filter these before returning, to remove elements?
-  return database("redirects")
-    .where({ campaign_id: campaignId });
+  return runQuery(database("redirects").where({ campaign_id: campaignId }));
 }
 
 export async function dbClose(): Promise<unknown>  {

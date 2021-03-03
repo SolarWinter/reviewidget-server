@@ -6,7 +6,7 @@ const { init } = require("../lib/server");
 const { dbCleanAndSeed } = require("./fixtures");
 const { database } = require("../lib/queries");
 
-describe.only("redirect", () => {
+describe("redirect", () => {
   let server;
 
   beforeEach(async () => {
