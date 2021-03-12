@@ -120,8 +120,17 @@ export const init = async function(): Promise<Server> {
     {
       method: "GET",
       path: "/",
+      options: {
+        auth: {
+          mode: 'try'
+        }
+      },
       handler: (request, h) => {
-        return h.view('index', { ...request.auth.credentials });
+        if (request.auth.credentials) {
+          return h.view('index', { ...request.auth.credentials });
+        } else {
+          return h.view('indexPublic');
+        }
       }
     }
   ])
