@@ -1,5 +1,8 @@
 import { Request, ResponseToolkit, ResponseObject } from "@hapi/hapi";
 
+import Joi from "joi";
+const ValidationError = Joi.ValidationError;
+
 // TODO split into separate type file
 import { Site } from "./queries";
 
@@ -14,6 +17,12 @@ declare module "@hapi/hapi" {
   }
 }
 
+const schema = Joi.object({
+  user_id: Joi.number().required().positive(),
+  domain: Joi.string().required().domain(),
+  active: Joi.boolean().required()
+});
+
 async function addSiteRender(_request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   return h.view("addsite");
 }
@@ -21,19 +30,30 @@ async function addSiteRender(_request: Request, h: ResponseToolkit): Promise<Res
 async function addSitePost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   try {
     const incoming: Site = (request.payload as Site);
-    const siteDetails: Site = {
+    let siteDetails: Site = {
       user_id: parseInt(request.auth.credentials.id),
       domain: incoming.domain,
-      // TODO make it a checkbox
-      active: true
+      active: incoming.active
     };
+    const o = schema.validate(siteDetails, { stripUnknown: true });
+    siteDetails = (o.value as Site);
+    if (o.error) {
+      throw o.error;
+    }
     const id = await createSite(request, siteDetails);
     return h.redirect("/sites/" + id);
   } catch (err) {
-    console.error("error", err);
-    request.log(["error"], "Error adding site");
-    // TODO Find what the failure was
-    return h.view("addsite");
+    const errors: { [key: string]: string } = {};
+    if (err instanceof ValidationError && err.isJoi) {
+      for (const detail of err.details) {
+        errors[detail.path[0]] = detail.message;
+      }
+    } else {
+      console.error("error", err);
+      request.log(["error", "sites"], "Error adding site");
+    }
+
+    return h.view("addsite", { errors: errors });
   }
 }
 

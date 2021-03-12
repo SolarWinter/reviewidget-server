@@ -20,7 +20,7 @@ const newCampaignData = {
   finish: now.add(14, 'days').toDate()
 };
 
-describe.only("campaign tests", async () => {
+describe("campaign tests", async () => {
   let server;
 
   beforeEach(async () => {

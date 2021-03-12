@@ -9,7 +9,8 @@ const { init } = require("../lib/server");
 const { dbCleanAndSeed } = require("./fixtures");
 
 const newSiteData = {
-  domain: "example.com"
+  domain: "example.com",
+  active: true
 };
 
 describe("site tests", () => {
@@ -79,7 +80,8 @@ describe("site tests", () => {
     expect(sites.length).to.equal(3);
     expect(sites[0].id).to.equal("site-1");
     expect(sites[1].id).to.equal("site-2");
-    expect(sites[2].id).to.equal("site-3");
+    // There's a site belonging to another user, so we don't get site-3.
+    expect(sites[2].id).to.equal("site-4");
   });
 
   it("can't add a new site with no creds", async () => {
@@ -100,4 +102,30 @@ describe("site tests", () => {
       auth: { strategy: "session", credentials: { id: 1 } }})
     expect(res.statusCode).to.equal(404);
   })
+
+  it("can't add a new site with no domain", async () => {
+    await dbCleanAndSeed();
+
+    let siteDataCopy = Object.assign({}, newSiteData);
+    delete (siteDataCopy.domain);
+    const res = await server.inject({
+      method: "post", url: "/sites/add",
+      auth: { strategy: "session", credentials: { id: 1 } },
+      payload: { ...siteDataCopy }
+    });
+    expect(res.statusCode).to.equal(200);
+  });
+
+  it("can't add a new site with no active value", async () => {
+    await dbCleanAndSeed();
+
+    let siteDataCopy = Object.assign({}, newSiteData);
+    delete (siteDataCopy.active);
+    const res = await server.inject({
+      method: "post", url: "/sites/add",
+      auth: { strategy: "session", credentials: { id: 1 } },
+      payload: { ...siteDataCopy }
+    });
+    expect(res.statusCode).to.equal(200);
+  });
 })

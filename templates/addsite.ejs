@@ -11,6 +11,11 @@
           <dd class="mt-1 text-gray-900">
             <input type="text" name="domain" placeholder="your.domain.com" required />
           </dd>
+          <div class="error pt-3">
+            <% if (locals.errors && locals.errors["domain"]) { %>
+              <%= errors["domain"] %>
+            <% } %>
+          </div>
         </div>
       </dl>
     </div>
