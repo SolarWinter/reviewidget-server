@@ -57,10 +57,10 @@ async function registerServerPlugins(server: Server) {
     await server.register({
       plugin: hapipino,
       options: {
-        prettyPrint: !production
+        prettyPrint: false
       }
     });
-  } else {
+  } else if (process.env.NODE_ENV != "test") {
     await server.register({ plugin: laabr, options: {} });
   }
   await server.register(hapiCookie);
