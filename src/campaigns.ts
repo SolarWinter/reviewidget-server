@@ -1,5 +1,4 @@
 import { Request, ResponseToolkit, ResponseObject, ServerRoute } from "@hapi/hapi";
-import Boom from "@hapi/boom";
 import moment from "moment";
 
 import { getCampaignsForUser, getCampaignById, getSiteById, getSitesForUser } from "./queries";
@@ -67,7 +66,7 @@ async function addCampaignPost(request: Request, h: ResponseToolkit): Promise<Re
     const domains = await getSitesForUser(request.auth.credentials.id, ["domain", "id"]);
     // TODO Find what the failure was
     // TODO send back the data they submitted to re-fill the form
-    return h.view("addcampaign", { domains: domains, campaign: campaignDetails });
+    return h.view("addCampaign", { domains: domains, campaign: campaignDetails, moment: moment });
   }
 }
 

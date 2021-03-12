@@ -9,11 +9,7 @@ const { init } = require("../lib/server");
 const { dbCleanAndSeed } = require("./fixtures");
 
 const newSiteData = {
-  domain: "example.com",
-  reviewSiteName: "Google",
-  reviewSiteUrl: "https://www.google.co.uk/",
-  reviewThreshold: "4",
-  thankText: "Thanks Google-bot",
+  domain: "example.com"
 };
 
 describe("site tests", () => {
@@ -36,8 +32,8 @@ describe("site tests", () => {
     const html = HTMLParser.parse(res.result);
     const sites = html.querySelectorAll("div.site-entry");
     expect(sites.length).to.equal(2);
-    expect(sites[0].id == "site-1");
-    expect(sites[1].id == "site-2");
+    expect(sites[0].id).to.equal("site-1");
+    expect(sites[1].id).to.equal("site-2");
   });
 
   it("get the 'add a new site page'", async () => {
@@ -81,9 +77,9 @@ describe("site tests", () => {
     const html = HTMLParser.parse(res.result);
     const sites = html.querySelectorAll("div.site-entry");
     expect(sites.length).to.equal(3);
-    expect(sites[0].id == "site-1");
-    expect(sites[1].id == "site-2");
-    expect(sites[2].id == "site-3");
+    expect(sites[0].id).to.equal("site-1");
+    expect(sites[1].id).to.equal("site-2");
+    expect(sites[2].id).to.equal("site-3");
   });
 
   it("can't add a new site with no creds", async () => {
