@@ -1,20 +1,26 @@
 import { Request, ResponseObject, ResponseToolkit, ServerRoute } from "@hapi/hapi";
 import iplocate from "node-iplocate";
 import { Boom } from "@hapi/boom";
+import Joi from "joi";
 
 import { getCampaignById, addRedirectEntry } from "./queries";
 import { Campaign } from "./queries";
 
+const schema = Joi.object({
+  campaignId: Joi.number().required().positive()
+})
+
 export async function handleRedirect(request: Request, h: ResponseToolkit): Promise<ResponseObject | Boom> {
-  const domain = request.query.domain;
   const campaignId = request.query.campaignId;
   const remoteIp = request.info.remoteAddress;
 
-  request.log(["review"], `Received redirect for ${domain} from ${remoteIp}`);
-  if (!campaignId) {
-    request.log(["review"], "Campaign ID is missing.");
-    const response = h.response();
-    response.code(404);
+  request.log(["review"], `Received redirect for campaign ${campaignId} from ${remoteIp}`);
+  const o = schema.validate({ campaignId: campaignId })
+  if (o.error) {
+    // Skip the exception, there's only one thing to validate.
+    request.log(["review", "validation"], "Campaign ID is missing or invalid.");
+    const response = h.response()
+    response.code(422);
     return response;
   }
 

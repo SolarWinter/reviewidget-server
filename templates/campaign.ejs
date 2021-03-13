@@ -37,7 +37,7 @@ svg {
         <dt class="text-sm font-medium text-gray-500">
           Review site
         </dt>
-        <dd class="mt-1 text-gray-900">
+        <dd id-"reviewSiteName" class="mt-1 text-gray-900">
           <a href="<%= campaign.reviewSiteUrl %>">
             <%= campaign.reviewSiteName %> (<%= campaign.reviewSiteUrl %>)
           </a>
@@ -47,7 +47,7 @@ svg {
         <dt class="text-sm font-medium text-gray-500">
           Review threshold
         </dt>
-        <dd class="mt-1 text-gray-900">
+        <dd id="reviewThreshold" class="mt-1 text-gray-900">
           <%= campaign.reviewThreshold %>
         </dd>
       </div>
@@ -55,7 +55,7 @@ svg {
         <dt class="text-sm font-medium text-gray-500">
           Campaign start
         </dt>
-        <dd class="mt-1 text-gray-900">
+        <dd id="start" class="mt-1 text-gray-900">
           <%= moment(campaign.start).format("dddd, MMMM Do YYYY") %>
         </dd>
       </div>
@@ -63,7 +63,7 @@ svg {
         <dt class="text-sm font-medium text-gray-500">
           Campaign finish
         </dt>
-        <dd class="mt-1 text-gray-900">
+        <dd id="finish" class="mt-1 text-gray-900">
           <%= moment(campaign.finish).format("dddd, MMMM Do YYYY") %>
         </dd>
       </div>
@@ -71,7 +71,7 @@ svg {
         <dt class="text-sm font-medium text-gray-500">
           Thank you text
         </dt>
-        <dd class="mt-1 text-gray-900">
+        <dd id="thankText" class="mt-1 text-gray-900">
           <%= campaign.thankText %>
         </dd>
       </div>
@@ -79,7 +79,7 @@ svg {
         <dt class="text-sm font-medium text-gray-500">
           Campaign active?
         </dt>
-        <dd class="mt-1 text-gray-900">
+        <dd id="active" class="mt-1 text-gray-900">
           <%= (campaign.active ? "Yes" : "No") %>
         </dd>
       </div>
@@ -91,7 +91,7 @@ svg {
           <div class="-my-2 overflow-x-auto">
             <div class="py-2 align-middle inline-block min-w-full">
               <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table id="followingTable" class="min-w-full divide-y divide-gray-200">
                   <thead class="bg-gray-50">
                     <tr>
                       <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">

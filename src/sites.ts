@@ -18,6 +18,7 @@ declare module "@hapi/hapi" {
 }
 
 const schema = Joi.object({
+  id: Joi.number().positive(),
   user_id: Joi.number().required().positive(),
   domain: Joi.alternatives().required().try(Joi.string().domain(), Joi.string().ip()),
   active: Joi.boolean().required()
@@ -29,24 +30,20 @@ async function addSiteRender(_request: Request, h: ResponseToolkit): Promise<Res
 
 async function addSitePost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   try {
-    const incoming: Site = (request.payload as Site);
-    let siteDetails: Site = {
-      user_id: parseInt(request.auth.credentials.id),
-      domain: incoming.domain,
-      active: incoming.active
-    };
+    let siteDetails: Site = (request.payload as Site);
+    siteDetails["user_id"] = parseInt(request.auth.credentials.id);
     const o = schema.validate(siteDetails, { stripUnknown: true });
-    siteDetails = (o.value as Site);
     if (o.error) {
       throw o.error;
     }
+    siteDetails = (o.value as Site);
     const id = await createSite(request, siteDetails);
     return h.redirect("/sites/" + id);
   } catch (err) {
     const errors: { [key: string]: string } = {};
     if (err instanceof ValidationError && err.isJoi) {
       for (const detail of err.details) {
-        errors[detail.path[0]] = detail.message;
+        errors[detail.context!.key!] = detail.message;
       }
     } else {
       console.error("error", err);
@@ -90,20 +87,27 @@ async function editSiteRender(request: Request, h: ResponseToolkit): Promise<Res
 
 async function editSitePost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   try {
-    const incoming: Site = (request.payload as Site);
-    const siteDetails: Site = {
-      user_id: parseInt(request.auth.credentials.id),
-      domain: incoming.domain,
-      // TODO make it a checkbox
-      active: true
-    };
+    let siteDetails: Site = (request.payload as Site);
+    siteDetails["user_id"] = parseInt(request.auth.credentials.id);
+    const o = schema.validate(siteDetails, { stripUnknown: true });
+    if (o.error) {
+      throw o.error;
+    }
+    siteDetails = (o.value as Site);
     const id = await updateSite(request, request.params.siteId, siteDetails);
     return h.redirect("/sites/" + id);
   } catch (err) {
-    console.error("error", err);
-    request.log(["error"], "Error adding site");
-    // TODO Find what the failure was
-    return h.view("addsite", { loggedIn: request.auth.isAuthenticated });
+    const site = await getSiteById(request.params.siteId, request.auth.credentials.id);
+    const errors: { [key: string]: string } = {};
+    if (err instanceof ValidationError && err.isJoi) {
+      for (const detail of err.details) {
+        errors[detail.context!.key!] = detail.message;
+      }
+    } else {
+      console.error("error", err);
+      request.log(["error", "sites"], "Error adding site");
+    }
+    return h.view("editSite", { site: site, errors: errors });
   }
 }
 

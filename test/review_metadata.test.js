@@ -32,6 +32,9 @@ describe("review", () => {
 
     let res = await server.inject({ method: "GET", url: "/addReview?domain=wombatsvilleunited.com&rating=5" });
     expect(res.statusCode).to.equal(404);
-    expect(res.result).to.be.null;
+    expect(res.result).to.not.be.null;
+    expect(res.result.statusCode).to.equal(404);
+    expect(res.result.error).to.equal('Not Found');
+    expect(res.result.message).to.equal('Not Found');
   });
 });
