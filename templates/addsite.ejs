@@ -9,16 +9,18 @@
             <label for="domain">Website domain (e.g. www.example.com)</label>
           </dt>
           <dd class="mt-1 text-gray-900">
-            <input type="text" name="domain" placeholder="your.domain.com" required />
+            <input type="text" name="domain" placeholder="your.domain.com"  />
           </dd>
-          <div class="error pt-3">
-            <% if (locals.errors && locals.errors["domain"]) { %>
-              <%= errors["domain"] %>
-            <% } %>
-          </div>
+          <span id="domain-error" class="error text-red-500"></span>
         </div>
       </dl>
     </div>
+  </div>
+
+  <div>
+    <label for="active">Active</label>
+    <input type="checkbox" id="active" name="active" value=true checked>
+    <span id="active-error" class="error text-red-500"></span>
   </div>
 
   <div class="pt-5 pr-6">
@@ -32,5 +34,7 @@
     </div>
   </div>
 </form>
+
+<%- include("inputErrorScript"); -%>
 
 <%- include("footer"); -%>

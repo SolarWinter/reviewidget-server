@@ -28,7 +28,7 @@
             <label>Review site</label>
           </dt>
           <dd class="mt-1 text-gray-900">
-            <input type="text" class="block w-full shadow-sm py-3 px-4 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" name="reviewSiteName" value="<%= campaign.reviewSiteName %>" required />
+            <input type="text" class="block w-full shadow-sm py-3 px-4 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" name="reviewSiteName" value="<%= campaign.reviewSiteName %>"  />
           </dd>
         </div>
         <div class="sm:col-span-1">
@@ -44,7 +44,7 @@
             Review threshold
           </dt>
           <dd class="mt-1 text-gray-900">
-            <input type="number" class="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" name="reviewThreshold" value="<%= campaign.reviewThreshold %>" required />
+            <input type="number" class="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" name="reviewThreshold" value="<%= campaign.reviewThreshold %>"  />
           </dd>
         </div>
       </dl>
@@ -90,10 +90,12 @@
               name="active"
               id="active"
               type="checkbox"
+              value="true"
               class="py-4 px-4 block mt-3 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
               <%= (campaign.active ? "checked" : "") %>
             >
           </dd>
+          <span id="active-error" class="error text-red-500"></span>
         </div>
       </dl>
       <dl class="pt-3 mt-3 grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-1">
@@ -104,6 +106,7 @@
           <dd class="mt-1 text-gray-900">
             <textarea class="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" name="thankText" rows="5" cols="20" required><%= campaign.thankText %></textarea>
           </dd>
+          <span id="thankText-error" class="error text-red-500"></span>
         </div>
       </dl>
     </div>
@@ -119,5 +122,7 @@
     </div>
   </div>
 </form>
+
+<%- include("inputErrorScript"); -%>
 
 <%- include("footer"); -%>

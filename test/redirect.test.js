@@ -21,18 +21,18 @@ describe("redirect", () => {
     const localhostId = await database("sites").first(["id"]).where({ domain: 'localhost' });
     const campaignId = await database("campaigns").first(["id"]).where({ site_id: localhostId.id });
 
-    let res = await server.inject({ method: "GET", url: "/redirect?domain=localhost&campaignId=" + campaignId.id });
+    let res = await server.inject({ method: "GET", url: "/redirect?campaignId=" + campaignId.id });
     expect(res.statusCode).to.equal(302);
     expect(res.headers.location).to.equal("https://www.google.com/");
   });
 
   it("returns 'not found' for valid site entry with invalid campaign ID", async () => {
-    let res = await server.inject({ method: "GET", url: "/redirect?domain=localhost&campaignId=65535" });
+    let res = await server.inject({ method: "GET", url: "/redirect?campaignId=65535" });
     expect(res.statusCode).to.equal(404);
   });
 
   it("returns 'not found' for invalid site entry", async () => {
-    let res = await server.inject({ method: "GET", url: "/redirect?domain=wombatsvilleunited.com" });
-    expect(res.statusCode).to.equal(404);
+    let res = await server.inject({ method: "GET", url: "/redirect?campaignId=wibble" });
+    expect(res.statusCode).to.equal(422);
   });
 });

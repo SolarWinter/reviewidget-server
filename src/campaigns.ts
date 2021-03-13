@@ -1,9 +1,12 @@
 import { Request, ResponseToolkit, ResponseObject, ServerRoute } from "@hapi/hapi";
 import moment from "moment";
 
+import Joi from "joi";
+const ValidationError = Joi.ValidationError;
+
 import { getCampaignsForUser, getCampaignById, getSiteById, getSitesForUser } from "./queries";
 import { createCampaign, updateCampaign, deleteCampaign, getRedirectsForCampaign } from "./queries";
-import { Campaign, Site } from "./queries";
+import { Campaign } from "./queries";
 
 declare module "@hapi/hapi" {
   interface AuthCredentials {
@@ -11,6 +14,21 @@ declare module "@hapi/hapi" {
     email: string;
   }
 }
+
+const schema = Joi.object({
+  id: Joi.number().positive(),
+  site_id: Joi.number().required().positive(),
+  active: Joi.boolean().required(),
+  reviewSiteName: Joi.string().required(),
+  reviewSiteUrl: Joi.string().required().uri({
+    scheme: [ "http", "https" ],
+    domain: {}
+  }),
+  reviewThreshold: Joi.number().required().positive(),
+  thankText: Joi.string().required(),
+  start: Joi.date().less(Joi.ref('finish')).required(),
+  finish: Joi.date().required()
+});
 
 async function showCampaigns(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const campaigns: Campaign[] = await getCampaignsForUser(request.auth.credentials.id);
@@ -31,6 +49,7 @@ async function addCampaignRender(request: Request, h: ResponseToolkit): Promise<
     campaign: Campaign;
     // TODO can we improve on this?
     moment: unknown;
+    errors?: {string:string}[];
   };
 
   const campaign = {} as Campaign;
@@ -46,29 +65,31 @@ async function addCampaignRender(request: Request, h: ResponseToolkit): Promise<
 }
 
 async function addCampaignPost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
-  let campaignDetails: Campaign = {} as Campaign;
+  let campaignDetails: Campaign = ({} as Campaign)
   try {
-    const incoming: Campaign = (request.payload as Campaign);
-    campaignDetails = {
-      site_id: incoming.site_id,
-      reviewSiteName: incoming.reviewSiteName,
-      reviewSiteUrl: incoming.reviewSiteUrl,
-      reviewThreshold: incoming.reviewThreshold,
-      thankText: incoming.thankText,
-      start: incoming.start,
-      finish: incoming.finish,
-      active: incoming.active
-    };
+    campaignDetails = (request.payload as Campaign);
+    const o = schema.validate(campaignDetails, { stripUnknown: true });
+    console.log("o", o);
+    if (o.error) {
+      throw o.error;
+    }
+    campaignDetails = (o.value as Campaign);
     const id = await createCampaign(request, campaignDetails);
     request.log(`Created campaign id ${id}`);
     return h.redirect("/campaigns/" + id);
   } catch (err) {
-    console.error("error", err);
-    request.log(["error"], "Error adding campaign");
+    const errors: { [key: string]: string } = {};
+    if (err instanceof ValidationError && err.isJoi) {
+      for (const detail of err.details) {
+        errors[detail.context!.key!] = detail.message;
+      }
+    } else {
+      console.error("error", err);
+      request.log(["error", "campaigns"], "Error adding campaign");
+    }
+
     const domains = await getSitesForUser(request.auth.credentials.id, ["domain", "id"]);
-    // TODO Find what the failure was
-    // TODO send back the data they submitted to re-fill the form
-    return h.view("addCampaign", { domains: domains, campaign: campaignDetails, moment: moment });
+    return h.view("addCampaign", { domains: domains, campaign: campaignDetails, errors: errors, moment: moment });
   }
 }
 
@@ -92,28 +113,28 @@ async function editCampaignRender(request: Request, h: ResponseToolkit): Promise
 }
 
 async function editCampaignPost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
-  let campaignDetails: Campaign = {} as Campaign;
-  let site: Site = {} as Site;
+  const campaignDetails: Campaign = {} as Campaign;
   try {
-    const incoming: Campaign = (request.payload as Campaign);
-    site = await getSiteById(incoming.site_id, request.auth.credentials.id);
-    campaignDetails = {
-      site_id: incoming.site_id,
-      reviewSiteName: incoming.reviewSiteName,
-      reviewSiteUrl: incoming.reviewSiteUrl,
-      reviewThreshold: incoming.reviewThreshold,
-      thankText: incoming.thankText,
-      start: incoming.start,
-      finish: incoming.finish,
-      active: incoming.active
-    };
+    let campaignDetails: Campaign = (request.payload as Campaign);
+    const o = schema.validate(campaignDetails, { stripUnknown: true });
+    if (o.error) {
+      throw o.error;
+    }
+    campaignDetails = (o.value as Campaign);
     const id = await updateCampaign(request, request.params.campaignId, campaignDetails);
     return h.redirect("/campaigns/" + id);
   } catch (err) {
-    console.error("error", err);
-    request.log(["error"], "Error adding campaign");
-    // TODO Find what the failure was
-    return h.view("editCampaign", { loggedIn: request.auth.isAuthenticated, campaign: { ...campaignDetails, domain: site.domain } });
+    const errors: { [key: string]: string } = {};
+    if (err instanceof ValidationError && err.isJoi) {
+      for (const detail of err.details) {
+        errors[detail.context!.key!] = detail.message;
+      }
+    } else {
+      console.error("error", err);
+      request.log(["error", "campaigns"], "Error adding campaign");
+    }
+
+    return h.view("editCampaign", { loggedIn: request.auth.isAuthenticated, campaign: campaignDetails });
   }
 }
 
