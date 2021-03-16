@@ -69,6 +69,9 @@ async function registerServerPlugins(server: Server) {
 }
 
 export const init = async function(): Promise<Server> {
+  if (!production) {
+    process.env.BCRYPT_SALT_ROUNDS="1";
+  }
   server = Hapi.server({
     port: process.env.PORT,
     host: '0.0.0.0'
