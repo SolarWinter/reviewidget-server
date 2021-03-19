@@ -26,6 +26,7 @@ export async function handleReview(request: Request, h: ResponseToolkit): Promis
   const campaign = campaigns[Math.floor(Math.random() * (campaigns.length))];
 
   const returnData = {
+    campaignId: campaign.id,
     reviewSiteUrl: campaign.reviewSiteUrl,
     reviewSiteName: campaign.reviewSiteName,
     reviewThreshold: campaign.reviewThreshold,
