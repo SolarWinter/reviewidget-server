@@ -26,7 +26,7 @@ async function showCampaign(request: Request, h: ResponseToolkit): Promise<Respo
 
 async function addCampaignRender(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   type ContextType = {
-    domains: string[];
+    domains: { domain: string; id: number }[];
     siteId?: number | string;
     campaign: Campaign;
     // TODO can we improve on this?
@@ -35,8 +35,10 @@ async function addCampaignRender(request: Request, h: ResponseToolkit): Promise<
 
   const campaign = {} as Campaign;
   const sites = await getSitesForUser(request.auth.credentials.id, ["domain", "id"]);
-  const domains = sites.map(site => site.domain);
-  const context: ContextType = { domains: domains, campaign: campaign, moment: moment};
+  const siteList = sites.map(site => {
+    return { domain: site.domain, id: site.id! }
+  })
+  const context: ContextType = { domains: siteList, campaign: campaign, moment: moment};
   if (request.query.site) {
     context["siteId"] = request.query.site;
   }
