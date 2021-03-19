@@ -19,7 +19,7 @@ declare module "@hapi/hapi" {
 
 const schema = Joi.object({
   user_id: Joi.number().required().positive(),
-  domain: Joi.string().required().domain(),
+  domain: Joi.alternatives().required().try(Joi.string().domain(), Joi.string().ip()),
   active: Joi.boolean().required()
 });
 
