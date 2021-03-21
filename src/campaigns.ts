@@ -80,6 +80,7 @@ async function addCampaignPost(request: Request, h: ResponseToolkit): Promise<Re
   } catch (err) {
     const errors: { [key: string]: string } = {};
     if (err instanceof ValidationError && err.isJoi) {
+      request.log(["error", "campaigns"], `Validation errors: ${err.details.map(d => d.message)}`);
       for (const detail of err.details) {
         errors[detail.context!.key!] = detail.message;
       }
@@ -109,13 +110,18 @@ async function deleteCampaignPost(request: Request, h: ResponseToolkit): Promise
 async function editCampaignRender(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const campaign: Campaign = await getCampaignById(request.params.campaignId);
   const domains = await getSitesForUser(request.auth.credentials.id, ["domain", "id"]);
-  return h.view("editCampaign", { campaign: campaign, domains: domains, moment: moment});
+  return h.view("editCampaign", { campaign: campaign, domains: domains, moment: moment });
 }
 
 async function editCampaignPost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const campaignDetails: Campaign = {} as Campaign;
   try {
     let campaignDetails: Campaign = (request.payload as Campaign);
+    // If it's unchecked then it's just missing from the form. So we check if it's undefined
+    // (just in case) and then substitute 'false'.
+    if (campaignDetails.active === undefined) {
+      campaignDetails.active = false;
+    }
     const o = schema.validate(campaignDetails, { stripUnknown: true });
     if (o.error) {
       throw o.error;
@@ -126,6 +132,7 @@ async function editCampaignPost(request: Request, h: ResponseToolkit): Promise<R
   } catch (err) {
     const errors: { [key: string]: string } = {};
     if (err instanceof ValidationError && err.isJoi) {
+      request.log(["error", "campaigns"], `Validation errors: ${err.details.map(d => d.message )}`);
       for (const detail of err.details) {
         errors[detail.context!.key!] = detail.message;
       }
@@ -134,7 +141,8 @@ async function editCampaignPost(request: Request, h: ResponseToolkit): Promise<R
       request.log(["error", "campaigns"], "Error adding campaign");
     }
 
-    return h.view("editCampaign", { loggedIn: request.auth.isAuthenticated, campaign: campaignDetails });
+    const domains = await getSitesForUser(request.auth.credentials.id, ["domain", "id"]);
+    return h.view("editCampaign", { loggedIn: request.auth.isAuthenticated, campaign: campaignDetails, domains: domains, moment: moment });
   }
 }
 
