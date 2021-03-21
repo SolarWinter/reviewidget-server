@@ -1,4 +1,6 @@
 import { Request, ResponseToolkit, ResponseObject } from "@hapi/hapi";
+import { v4 as uuid } from "uuid";
+import moment from "moment";
 
 import Joi from "joi";
 const ValidationError = Joi.ValidationError;
@@ -6,9 +8,11 @@ const ValidationError = Joi.ValidationError;
 // TODO split into separate type file
 import { Site } from "./queries";
 
+import { server } from "./server";
 import { createSite, deleteSite, updateSite } from "./queries";
 import { getSiteById, getSitesForUser, getCampaignsForSiteId } from "./queries";
-import moment from "moment";
+import { setSiteVerified } from "./queries";
+import { dnsResolve } from "./utils";
 
 declare module "@hapi/hapi" {
   interface AuthCredentials {
@@ -21,7 +25,9 @@ const schema = Joi.object({
   id: Joi.number().positive(),
   user_id: Joi.number().required().positive(),
   domain: Joi.alternatives().required().try(Joi.string().domain(), Joi.string().ip()),
-  active: Joi.boolean().required()
+  active: Joi.boolean().required(),
+  alias: Joi.string().required(),
+  verified: Joi.boolean().required()
 });
 
 async function addSiteRender(_request: Request, h: ResponseToolkit): Promise<ResponseObject> {
@@ -29,9 +35,12 @@ async function addSiteRender(_request: Request, h: ResponseToolkit): Promise<Res
 }
 
 async function addSitePost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
+  let siteDetails: Site = ({} as Site);
   try {
-    let siteDetails: Site = (request.payload as Site);
+    siteDetails = (request.payload as Site);
     siteDetails["user_id"] = parseInt(request.auth.credentials.id);
+    siteDetails["alias"] = uuid().substr(0, 8);
+    siteDetails["verified"] = false;
     const o = schema.validate(siteDetails, { stripUnknown: true });
     if (o.error) {
       throw o.error;
@@ -50,7 +59,7 @@ async function addSitePost(request: Request, h: ResponseToolkit): Promise<Respon
       request.log(["error", "sites"], "Error adding site");
     }
 
-    return h.view("addsite", { errors: errors });
+    return h.view("addsite", { errors: errors, site: siteDetails });
   }
 }
 
@@ -108,6 +117,25 @@ async function editSitePost(request: Request, h: ResponseToolkit): Promise<Respo
       request.log(["error", "sites"], "Error adding site");
     }
     return h.view("editSite", { site: site, errors: errors });
+  }
+}
+
+export async function verifySite(site: Site) {
+  try {
+    server.log(["background", "verification", "debug"], `Verifying ${site.alias} for ${site.domain}`);
+    let domain = site.alias;
+    if (process.env.NODE_ENV !== "development") {
+      // Debug/testing
+      domain += ".lvh.me";
+    }
+    const res = await dnsResolve(domain);
+    const valid = ((res.length == 1) && (res[0] == "127.0.0.1"));
+    if (valid != site.verified) {
+      setSiteVerified(site, valid);
+    }
+  } catch (err) {
+    console.error("Error", err, "updating site", site.id, "after verification");
+    server.log(["error", "verification", "background"], `Error ${err} updating site ${site.id} after verification`);
   }
 }
 

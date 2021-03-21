@@ -31,6 +31,8 @@ export interface Site {
   user_id: number;
   domain: string;
   active: boolean;
+  alias: string;
+  verified: boolean;
 }
 
 export interface Campaign {
@@ -106,13 +108,25 @@ export function getSitesForUser(userId: number | string, fields?: string[]): Pro
   return runQuery(query);
 }
 
-export function getSiteById(siteId: number | string, userId: number | string): Promise<Site> {
+export async function getSiteById(siteId: number | string, userId: number | string): Promise<Site> {
   siteId = ensureInt(siteId);
   userId = ensureInt(userId);
   return runQuery(database
     .first()
     .from("sites")
     .where({ id: siteId, user_id: userId }));
+}
+
+export async function getUnverifiedSites(): Promise<Site[]> {
+  return runQuery(database.from("sites").where({ verified: false }));
+}
+
+export async function setSiteVerified(site: Site, verified: boolean): Promise<null> {
+  console.log("Setting site", site.domain, "to verified:", verified);
+  return runQuery(database
+    .from("sites")
+    .where({ id: site.id })
+    .update({ verified: verified }));
 }
 
 export function addReview(site: string, rating: number, remote: string): Promise<number> {
