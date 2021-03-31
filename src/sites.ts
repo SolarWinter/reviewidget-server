@@ -41,6 +41,9 @@ async function addSitePost(request: Request, h: ResponseToolkit): Promise<Respon
     siteDetails["user_id"] = parseInt(request.auth.credentials.id);
     siteDetails["alias"] = uuid().substr(0, 8);
     siteDetails["verified"] = false;
+    if (siteDetails.active === undefined) {
+      siteDetails.active = false;
+    }
     const o = schema.validate(siteDetails, { stripUnknown: true });
     if (o.error) {
       throw o.error;
@@ -96,8 +99,15 @@ async function editSiteRender(request: Request, h: ResponseToolkit): Promise<Res
 
 async function editSitePost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   try {
+    const site = await getSiteById(request.params.siteId, request.auth.credentials.id);
     let siteDetails: Site = (request.payload as Site);
     siteDetails["user_id"] = parseInt(request.auth.credentials.id);
+    if (siteDetails.active === undefined) {
+      siteDetails.active = false;
+    }
+    // We have to fill these in, the user can't be trusted.
+    siteDetails.alias = site.alias;
+    siteDetails.verified = site.verified;
     const o = schema.validate(siteDetails, { stripUnknown: true });
     if (o.error) {
       throw o.error;

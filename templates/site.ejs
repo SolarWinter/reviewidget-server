@@ -1,87 +1,114 @@
 <%- include("header"); -%>
 
-<!-- This example requires Tailwind CSS v2.0+ -->
-<div class="bg-white shadow overflow-hidden sm:rounded-lg">
-  <div class="px-4 py-5 sm:px-6">
-    <h3 class="text-lg leading-6 font-medium text-gray-900">
-      Site information
-    </h3>
-  </div>
-  <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
-    <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
+<style>
+svg {
+  height: 1.5em;
+  margin: 0 2em;
+}
+</style>
 
-      <div class="sm:col-span-1">
-        <dt class="text-sm font-medium text-gray-500">
-          Site domain
-        </dt>
-        <dd id="domain" class="mt-1 text-gray-900">
-          <%= site.domain %>
-        </dd>
-      </div>
-      <div class="sm:col-span-1">
-        <dt class="text-sm font-medium text-gray-500">
-          DNS alias
-        </dt>
-        <dd id="reviewThreshold" class="mt-1 text-gray-900">
-          <%= site.alias %>
-        </dd>
-      </div>
-    </dl>
-    <div class="sm:col-span-1 mt-4">
-      <div class="sm:col-span-1">
-        <dt class="text-sm font-medium text-gray-500">
-          Verified
-        </dt>
-        <dd id="finish" class="mt-1 text-gray-900">
-          <span <%= site.verified ? "" : "class=text-red-700" %>>
-            <%= site.verified ? "Yes" : "No" %>
-          </span>
-        </dd>
-      </div>
-    </div>
+<div class="px-4 py-5 sm:px-6 flex items-center justify-between flex-wrap sm:flex-nowrap">
+  <h3 class="text-2xl leading-6 font-medium text-gray-900">
+    Site information
+  </h3>
+  <div class="inline-flex">
+    <a href="/sites/<%= site.id %>/edit">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+      </svg>
+    </a>
   </div>
-  <div class="px-4 sm:p-0 py-5 sm:p-0">
-    <span class="text-sm sm:px-6 font-medium text-gray-700">
-      Site campaigns
-    </span>
-    <div class="flex flex-col sm:px-6 py-4">
-      <div class="-my-2 overflow-x-auto">
-        <div class="py-2 align-middle inline-block min-w-full">
-          <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                    Review site
-                  </th>
-                  <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                    Start
-                  </th>
-                  <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                    Finish
-                  </th>
+  <div class="inline-flex">
+    <a href="/sites/<%= site.id %>/delete">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+      </svg>
+    </a>
+  </div>
+</div>
+<div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+  <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
+    <div class="sm:col-span-1">
+      <dt class="text-sm font-medium text-gray-500">
+        Site domain
+      </dt>
+      <dd id="domain" class="mt-1 text-gray-900">
+        <%= site.domain %>
+      </dd>
+    </div>
+    <div class="sm:col-span-1">
+      <dt class="text-sm font-medium text-gray-500">
+        DNS alias
+      </dt>
+      <dd id="reviewThreshold" class="mt-1 text-gray-900">
+        <%= site.alias %>
+      </dd>
+    </div>
+  </dl>
+  <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
+    <div class="sm:col-span-1 mt-4">
+      <dt class="text-sm font-medium text-gray-500">
+        Verified
+      </dt>
+      <dd id="finish" class="mt-1 text-gray-900">
+        <span <%= site.verified ? "" : "class=text-red-700" %>>
+          <%= site.verified ? "Yes" : "No" %>
+        </span>
+      </dd>
+    </div>
+    <div class="sm:col-span-1 mt-4">
+      <dt class="text-sm font-medium text-gray-500">
+        Active
+      </dt>
+      <dd id="finish" class="mt-1 text-gray-900">
+        <span <%= site.active ? "" : "class=text-red-700" %>>
+          <%= site.active ? "Yes" : "No" %>
+        </span>
+      </dd>
+    </div>
+  </dl>
+</div>
+<div class="px-4 sm:p-0 py-5 sm:p-0">
+  <span class="text-sm sm:px-6 font-medium text-gray-700">
+    Site campaigns
+  </span>
+  <div class="flex flex-col sm:px-6 py-4">
+    <div class="-my-2 overflow-x-auto">
+      <div class="py-2 align-middle inline-block min-w-full">
+        <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
+                  Review site
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
+                  Start
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
+                  Finish
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <% campaigns.forEach(function(campaign){ %>
+                <tr class="bg-white">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    <a href="/campaigns/<%= campaign.id %>">
+                      <%= campaign.reviewSiteName %>
+                    </a>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <%= moment(campaign.start).fromNow() %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <%= moment(campaign.finish).fromNow() %>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                <% campaigns.forEach(function(campaign){ %>
-                  <tr class="bg-white">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      <a href="/campaigns/<%= campaign.id %>">
-                        <%= campaign.reviewSiteName %>
-                      </a>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      <%= moment(campaign.start).fromNow() %>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <%= moment(campaign.finish).fromNow() %>
-                    </td>
-                  </tr>
-                <% }); %>
-              </tbody>
-            </table>
-          </div>
-        </dl>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>

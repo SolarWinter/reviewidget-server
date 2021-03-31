@@ -211,7 +211,7 @@ export async function createUser(request: Request, email: string, password: stri
 }
 
 export async function createSite(request: Request, siteDetails: Site): Promise<number> {
-  request.log(["sites"], "Creating site" + siteDetails);
+  // request.log(["sites"], "Creating site" + siteDetails);
   const result = await runQuery(database("sites").insert(siteDetails, ["id"]));
   if (result.length == 1) {
     return Promise.resolve(result[0].id);
