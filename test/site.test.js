@@ -115,17 +115,4 @@ describe("site tests", () => {
     });
     expect(res.statusCode).to.equal(200);
   });
-
-  it("can't add a new site with no active value", async () => {
-    await dbCleanAndSeed();
-
-    let siteDataCopy = Object.assign({}, newSiteData);
-    delete (siteDataCopy.active);
-    const res = await server.inject({
-      method: "post", url: "/sites/add",
-      auth: { strategy: "session", credentials: { id: 1 } },
-      payload: { ...siteDataCopy }
-    });
-    expect(res.statusCode).to.equal(200);
-  });
 })
