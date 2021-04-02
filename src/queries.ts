@@ -77,9 +77,9 @@ export function ensureInt(i : number | string) : number {
 async function runQuery(query: QueryBuilder) {
   // console.log("runQuery running query", query);
   const result = await query;
-  // console.log("result", result);
   if (!result) {
     // console.log("runQuery running query", query);
+    // await printSql(query, "runQuery running query");
     // console.log("not found");
     throw Boom.notFound();
   }
@@ -122,7 +122,11 @@ export async function getUnverifiedSites(): Promise<Site[]> {
 }
 
 export async function setSiteVerified(site: Site, verified: boolean): Promise<null> {
-  console.log("Setting site", site.domain, "to verified:", verified);
+  if (site.verified == verified) {
+    // Nothing to do.
+    return Promise.resolve(null);
+  }
+
   return runQuery(database
     .from("sites")
     .where({ id: site.id })
@@ -211,13 +215,18 @@ export async function createUser(request: Request, email: string, password: stri
 }
 
 export async function createSite(request: Request, siteDetails: Site): Promise<number> {
-  // request.log(["sites"], "Creating site" + siteDetails);
-  const result = await runQuery(database("sites").insert(siteDetails, ["id"]));
-  if (result.length == 1) {
-    return Promise.resolve(result[0].id);
-  } else {
-    console.error("result", result);
-    return Promise.reject("couldn't add site");
+  try {
+    // request.log(["sites"], "Creating site" + siteDetails);
+    const result = await runQuery(database("sites").insert(siteDetails, ["id"]));
+    if (result.length == 1) {
+      return Promise.resolve(result[0].id);
+    } else {
+      console.error("result", result);
+      return Promise.reject("couldn't add site");
+    }
+  } catch (err) {
+    console.error("Error", err, "creating site", siteDetails);
+    throw err;
   }
 }
 

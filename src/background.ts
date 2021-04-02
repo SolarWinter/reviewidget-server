@@ -4,7 +4,7 @@ import { getAllSites } from "./queries";
 import { server } from "./server";
 import { verifySite } from "./sites";
 
-let domainCheckId: NodeJS.Timeout;
+let domainCheckId: NodeJS.Timeout | null = null;
 
 export async function verifySites() {
   const sites: Site[] = await getAllSites();
@@ -17,12 +17,11 @@ export async function verifySites() {
   }
 }
 
-export async function initBackground() {
-  // domainCheckId = null;
-  return Promise.resolve(null);
+export function initBackground(): void {
+  domainCheckId = null;
 }
 
-export function startBackground() {
+export function startBackground(): void {
   const SECOND = 1000;
   const period: number = parseInt(process.env.DOMAIN_VERIFY_PERIOD_SECONDS || "300");
   console.log(`Starting domainCheck, period ${period} seconds`);
@@ -30,8 +29,9 @@ export function startBackground() {
   domainCheckId = setInterval(verifySites, SECOND * period);
 }
 
-export function stopBackground() {
+export function stopBackground(): void {
   if (domainCheckId)  {
     clearInterval(domainCheckId);
+    domainCheckId = null;
   }
 }

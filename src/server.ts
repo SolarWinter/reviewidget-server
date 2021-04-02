@@ -74,7 +74,10 @@ export const init = async function(): Promise<Server> {
   }
   server = Hapi.server({
     port: process.env.PORT,
-    host: '0.0.0.0'
+    host: '0.0.0.0',
+    router: {
+      stripTrailingSlash: true
+    }
     // , debug: { log: ["*"], request: ["*"] }
   });
 

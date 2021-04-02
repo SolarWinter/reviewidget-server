@@ -69,7 +69,6 @@ async function addCampaignPost(request: Request, h: ResponseToolkit): Promise<Re
   try {
     campaignDetails = (request.payload as Campaign);
     const o = schema.validate(campaignDetails, { stripUnknown: true });
-    console.log("o", o);
     if (o.error) {
       throw o.error;
     }
@@ -150,11 +149,6 @@ export const campaignRoutes: ServerRoute[] = [
   {
     method: "GET",
     path: "/campaigns",
-    handler: showCampaigns
-  },
-  {
-    method: "GET",
-    path: "/campaigns/",
     handler: showCampaigns
   },
   {

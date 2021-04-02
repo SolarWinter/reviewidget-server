@@ -2,6 +2,9 @@ import { Request, ResponseToolkit, ResponseObject } from "@hapi/hapi";
 import { v4 as uuid } from "uuid";
 import moment from "moment";
 
+import dns from "dns";
+const dnsPromises = dns.promises;
+
 import Joi from "joi";
 const ValidationError = Joi.ValidationError;
 
@@ -12,7 +15,6 @@ import { server } from "./server";
 import { createSite, deleteSite, updateSite } from "./queries";
 import { getSiteById, getSitesForUser, getCampaignsForSiteId } from "./queries";
 import { setSiteVerified } from "./queries";
-import { dnsResolve } from "./utils";
 
 declare module "@hapi/hapi" {
   interface AuthCredentials {
@@ -44,12 +46,15 @@ async function addSitePost(request: Request, h: ResponseToolkit): Promise<Respon
     if (siteDetails.active === undefined) {
       siteDetails.active = false;
     }
+
     const o = schema.validate(siteDetails, { stripUnknown: true });
     if (o.error) {
       throw o.error;
     }
     siteDetails = (o.value as Site);
+
     const id = await createSite(request, siteDetails);
+    await verifySiteById(request.auth.credentials.id, id);
     return h.redirect("/sites/" + id);
   } catch (err) {
     const errors: { [key: string]: string } = {};
@@ -77,19 +82,13 @@ async function showSite(request: Request, h: ResponseToolkit): Promise<ResponseO
   return h.view("site", { site: site, campaigns: campaigns, moment: moment });
 }
 
-async function deleteSiteRender(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
-  const site = await getSiteById(request.params.siteId, request.auth.credentials.id);
-  const u = new URL(request.headers.referer);
-  return h.view("deleteSite", { site: site, previousUrl: u.pathname });
-}
-
 interface UrlPayload {
   previousUrl: string;
 }
 async function deleteSitePost(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
   const site = await getSiteById(request.params.siteId, request.auth.credentials.id);
   await deleteSite(request, site.id!, request.auth.credentials.id);
-  return h.redirect((request.payload as UrlPayload).previousUrl);
+  return h.redirect("/sites");
 }
 
 async function editSiteRender(request: Request, h: ResponseToolkit): Promise<ResponseObject> {
@@ -130,19 +129,28 @@ async function editSitePost(request: Request, h: ResponseToolkit): Promise<Respo
   }
 }
 
+export async function verifySiteById(userId: string, id: number) {
+  try {
+    const site = await getSiteById(id, userId);
+    return verifySite(site);
+  } catch (err) {
+    console.error("Error", err, "getting or verifying site");
+  }
+}
+
 export async function verifySite(site: Site) {
   try {
     server.log(["background", "verification", "debug"], `Verifying ${site.alias} for ${site.domain}`);
-    let domain = site.alias;
-    if (process.env.NODE_ENV !== "development") {
+    let domain;
+    if (process.env.NODE_ENV !== "production") {
       // Debug/testing
-      domain += ".lvh.me";
+      domain = site.alias + ".lvh.me";
+    } else {
+      domain = site.alias + site.domain;
     }
-    const res = await dnsResolve(domain);
+    const res = await dnsPromises.resolve(domain);
     const valid = ((res.length == 1) && (res[0] == "127.0.0.1"));
-    if (valid != site.verified) {
-      setSiteVerified(site, valid);
-    }
+    setSiteVerified(site, valid);
   } catch (err) {
     console.error("Error", err, "updating site", site.id, "after verification");
     server.log(["error", "verification", "background"], `Error ${err} updating site ${site.id} after verification`);
@@ -182,11 +190,6 @@ export const siteRoutes = [
     handler: editSitePost
   },
 
-  {
-    method: "GET",
-    path: "/sites/{siteId}/delete",
-    handler: deleteSiteRender
-  },
   {
     method: "POST",
     path: "/sites/{siteId}/delete",
