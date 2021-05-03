@@ -630,10 +630,10 @@
     "@types/hapi__hapi" "*"
     handlebars "^4.1"
 
-"@types/ioredis@^4.16.3":
-  version "4.22.1"
-  resolved "https://registry.yarnpkg.com/@types/ioredis/-/ioredis-4.22.1.tgz#e03b064189ab20c9edc95ccde6228d2bf81f538c"
-  integrity sha512-GxXT828fkvBeThO68ZJg8cD2haqea5ANBJaxA+UZqLranNkEnQ8N7QLPtykwWbN/sRQz75O7kj+PNmCKF4CEKw==
+"@types/ioredis@^4.22.2":
+  version "4.26.1"
+  resolved "https://registry.yarnpkg.com/@types/ioredis/-/ioredis-4.26.1.tgz#761f1812c48a3ecfbd9d9ecd35c49849f8693e2e"
+  integrity sha512-k9f+bda6y0ZNrwUMNYI9mqIPqjPZ4Jqc+jTRTUyhFz8aD8cHQBk+uenTKCZj9RhdfrU4sSqrot5sn5LqkAHODw==
   dependencies:
     "@types/node" "*"
 
@@ -1211,15 +1211,15 @@ buffer-writer@2.0.0:
   resolved "https://registry.yarnpkg.com/buffer-writer/-/buffer-writer-2.0.0.tgz#ce7eb81a38f7829db09c873f2fbb792c0c98ec04"
   integrity sha512-a7ZpuTZU1TRtnwyCNW3I5dc0wWNC3VR9S++Ewyk2HHZdrO3CQJqSpd+95Us590V6AL7JqUAH2IwZ/398PmNFgw==
 
-bullmq@^1.15.1:
-  version "1.15.1"
-  resolved "https://registry.yarnpkg.com/bullmq/-/bullmq-1.15.1.tgz#7c809ce5732e56db3ba778980d3d93127ee680fd"
-  integrity sha512-vj41rPysNw7Y2vfivZ7NzJALhUnab3W5U1sAtIu1IZyo0TCcqk9PIC/MQfeTl1U771DGfm1I1/uLwX1cNi2MzQ==
+bullmq@^1.16.1:
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/bullmq/-/bullmq-1.24.0.tgz#b7939feeebed8be9f2d8745a5bdaf23e1881066a"
+  integrity sha512-JqlWZLk05LtY99wRwuQcGrmNdmxZeM0ODPd7091JmLFFL1Nqlk6Umo3hsDlQbcXkwubrNEX6Ht8EOrqezD3bPQ==
   dependencies:
-    "@types/ioredis" "^4.16.3"
+    "@types/ioredis" "^4.22.2"
     cron-parser "^2.7.3"
     get-port "^5.0.0"
-    ioredis "^4.17.3"
+    ioredis "^4.25.0"
     lodash "^4.17.11"
     semver "^6.3.0"
     tslib "^1.10.0"
@@ -2898,10 +2898,10 @@ interpret@^2.2.0:
   resolved "https://registry.yarnpkg.com/interpret/-/interpret-2.2.0.tgz#1a78a0b5965c40a5416d007ad6f50ad27c417df9"
   integrity sha512-Ju0Bz/cEia55xDwUWEa8+olFpCiQoypjnQySseKtmjNrnps3P+xfpUmGr90T7yjlVJmOtybRvPXhKMbHr+fWnw==
 
-ioredis@^4.17.3:
-  version "4.24.2"
-  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-4.24.2.tgz#ca827cb22b579827ac2999c8d5950d7605f286ed"
-  integrity sha512-SSuVXwoG747sZetxxs9gyAno5kfUfvo4s5mSZp4dh8vzuTnrtA5mTf2OjL6sPfIfNbVTROg2c+VbXceGlpucPQ==
+ioredis@^4.25.0:
+  version "4.27.1"
+  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-4.27.1.tgz#4ef947b455a1b995baa4b0d7e2c4e4f75f746421"
+  integrity sha512-PaFNFeBbOcEYHXAdrJuy7uesJcyvzStTM1aYMchTuky+VgKqDbXhnTJHaDsjAwcTwPx8Asatx+l2DW8zZ2xlsQ==
   dependencies:
     cluster-key-slot "^1.1.0"
     debug "^4.3.1"
