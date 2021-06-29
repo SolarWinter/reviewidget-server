@@ -4,8 +4,8 @@ import Boom from "@hapi/boom";
 
 import { LookupResult } from "node-iplocate";
 
-import Knex from "knex";
-import { QueryBuilder } from "knex";
+import {knex} from "knex";
+import {Knex} from "knex";
 /* @ts-ignore:disable-next-line */
 import knexConfig from '../knexfile';
 
@@ -24,7 +24,7 @@ switch (process.env.NODE_ENV) {
     break;
 }
 
-export const database: Knex = Knex(config);
+export const database: Knex = knex(config);
 
 export interface Site {
   id?: number;
@@ -59,7 +59,7 @@ export interface Redirect {
   remoteIp: string;
 }
 
-// async function printSql(query: QueryBuilder, msg?: string) {
+// async function printSql(query: Knex.QueryBuilder, msg?: string) {
 //   const sql = await query.toSQL();
 //   if (msg) {
 //     console.log(msg);
@@ -74,7 +74,7 @@ export function ensureInt(i : number | string) : number {
   return i;
 }
 
-async function runQuery(query: QueryBuilder) {
+async function runQuery(query: Knex.QueryBuilder) {
   // console.log("runQuery running query", query);
   const result = await query;
   // console.log("result", result);
