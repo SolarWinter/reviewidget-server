@@ -3,8 +3,8 @@ jobs:
   build_and_test:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:14
-      - image: circleci/postgres:11-alpine-ram
+      - image: circleci/node:24
+      - image: circleci/postgres:17-alpine-ram
         environment:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
